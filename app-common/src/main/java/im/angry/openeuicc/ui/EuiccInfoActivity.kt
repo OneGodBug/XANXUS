@@ -28,6 +28,7 @@ import net.typeblog.lpac_jni.impl.PKID_GSMA_LIVE_CI
 import net.typeblog.lpac_jni.impl.PKID_GSMA_TEST_CI
 
 // https://euicc-manual.osmocom.org/docs/pki/eum/accredited.json
+// ref: <https://regex101.com/r/5FFz8u>
 private val RE_SAS = Regex(
     """^[A-Z]{2}-[A-Z]{2}(?:-UP)?-\d{4}T?(?:-\d+)?T?$""",
     setOf(RegexOption.IGNORE_CASE),
