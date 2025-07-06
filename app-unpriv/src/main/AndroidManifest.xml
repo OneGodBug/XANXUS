@@ -24,6 +24,11 @@
         </activity>
 
         <activity
+            android:name="im.angry.openeuicc.ui.QuickAvailabilityActivity"
+            android:exported="false"
+            android:label="@string/quick_availability" />
+
+        <activity
             android:name="im.angry.openeuicc.ui.CompatibilityCheckActivity"
             android:exported="false"
             android:label="@string/compatibility_check" />
