@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.telephony.UiccSlotMapping
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -45,6 +46,10 @@ class SlotMappingFragment: BaseMaterialDialogFragment(),
     private lateinit var adapter: SlotMappingAdapter
     private lateinit var helpTextView: TextView
 
+    private val partner: Partner? by lazy {
+        Partner.getInstance(requireContext())
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -65,6 +70,12 @@ class SlotMappingFragment: BaseMaterialDialogFragment(),
         toolbar.title = getString(R.string.slot_mapping)
         toolbar.setNavigationOnClickListener { dismiss() }
         toolbar.setOnMenuItemClickListener(this)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val mappings = partner?.getString("sim_slot_mappings_json")
+        Log.e(TAG, "sim_slot_mappings_json = $mappings")
     }
 
     override fun onResume() {
