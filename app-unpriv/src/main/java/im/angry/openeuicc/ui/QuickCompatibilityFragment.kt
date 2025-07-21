@@ -179,8 +179,8 @@ open class QuickCompatibilityFragment : Fragment(), UnprivilegedEuiccContextMark
     }
 }
 
-val Reader.isSIM: Boolean
+private inline val Reader.isSIM: Boolean
     get() = name.startsWith("SIM")
 
-val Reader.slotIndex: Int
-    get() = (name.replace("SIM", "").toIntOrNull() ?: 1)
+private inline val Reader.slotIndex: Int
+    get() = (name.replace("SIM", "").toIntOrNull() ?: 1) - 1 // 0-based index
