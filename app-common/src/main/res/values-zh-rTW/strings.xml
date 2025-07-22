@@ -6,9 +6,9 @@
     <string name="help">幫助</string>
     <string name="reload">重新載入卡槽</string>
     <string name="channel_name_format">虛擬卡槽 %d</string>
-    <string name="enabled">已啟用</string>
-    <string name="disabled">已停用</string>
-    <string name="provider">電信業者:</string>
+    <string name="profile_state_enabled">已啟用</string>
+    <string name="profile_state_disabled">已停用</string>
+    <string name="profile_provider">電信業者:</string>
     <string name="profile_class">類型:</string>
     <string name="enable">啟用</string>
     <string name="disable">停用</string>

@@ -380,9 +380,9 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
 
             state.setText(
                 if (profile.isEnabled) {
-                    R.string.enabled
+                    R.string.profile_state_enabled
                 } else {
-                    R.string.disabled
+                    R.string.profile_state_disabled
                 }
             )
             provider.text = profile.providerName

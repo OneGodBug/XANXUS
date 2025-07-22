@@ -6,9 +6,9 @@
     <string name="help">帮助</string>
     <string name="reload">重新加载卡槽</string>
     <string name="channel_name_format">逻辑卡槽 %d</string>
-    <string name="enabled">已启用</string>
-    <string name="disabled">已禁用</string>
-    <string name="provider">提供商:</string>
+    <string name="profile_state_enabled">已启用</string>
+    <string name="profile_state_disabled">已禁用</string>
+    <string name="profile_provider">提供商:</string>
     <string name="profile_class">类型:</string>
     <string name="enable">启用</string>
     <string name="disable">禁用</string>
