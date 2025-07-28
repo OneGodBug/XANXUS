@@ -1,6 +1,7 @@
 package im.angry.openeuicc.ui
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -16,6 +17,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -125,16 +127,22 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun ensureNotificationPermissions() {
-        val needsNotificationPerms = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU;
-        val notificationPermsGranted =
-            needsNotificationPerms && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-        if (needsNotificationPerms && !notificationPermsGranted) {
-            requestPermissions(
-                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-                PERMISSION_REQUEST_CODE
-            )
+        val permission = android.Manifest.permission.POST_NOTIFICATIONS
+        if (checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) return
+        if (!shouldShowRequestPermissionRationale(permission)) {
+            requestPermissions(arrayOf(permission), PERMISSION_REQUEST_CODE)
+            return
         }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.notification_permission_request_title)
+            .setMessage(R.string.notification_permission_request_desc)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                requestPermissions(arrayOf(permission), PERMISSION_REQUEST_CODE)
+            }
+            .create()
+            .show()
     }
 
     private suspend fun init(fromUsbEvent: Boolean = false) {
@@ -209,7 +217,7 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             viewPager.currentItem = 0
         }
 
-        if (pages.size > 0) {
+        if (pages.isNotEmpty() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ensureNotificationPermissions()
         }
 
