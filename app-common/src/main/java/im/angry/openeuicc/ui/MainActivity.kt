@@ -137,8 +137,9 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             return
         }
         AlertDialog.Builder(this)
-            .setTitle(R.string.notification_permission_request_title)
-            .setMessage(R.string.notification_permission_request_desc)
+            .setTitle(R.string.notification_permission_request_rationale_title)
+            .setMessage(R.string.notification_permission_request_rationale_message)
+            .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 requestPermissions(arrayOf(permission), PERMISSION_REQUEST_CODE)
             }
