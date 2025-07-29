@@ -7,8 +7,6 @@
 
     <string name="notification_permission_request_rationale_title">Notification Permission Required</string>
     <string name="notification_permission_request_rationale_message">During the download process, notification permissions are required so that the app does not need to stay in the foreground</string>
-    <string name="notification_permission_request_granted">Notification permission granted</string>
-    <string name="notification_permission_request_denied">Notification permission denied</string>
 
     <string name="profile_reload_slots">Reload Slots</string>
     <string name="profile_no_enabled_profile">Unknown</string>
