@@ -16,6 +16,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
@@ -238,5 +239,21 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
             init(fromUsbEvent) // will set refreshing = false
         }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) = when (requestCode) {
+        PERMISSION_REQUEST_CODE -> {
+            val resId =
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    R.string.notification_permission_request_granted else
+                    R.string.notification_permission_request_denied
+            Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
+        }
+
+        else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }
