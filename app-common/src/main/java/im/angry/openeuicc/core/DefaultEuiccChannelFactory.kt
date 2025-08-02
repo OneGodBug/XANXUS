@@ -7,6 +7,8 @@ import im.angry.openeuicc.common.R
 import im.angry.openeuicc.core.usb.UsbApduInterface
 import im.angry.openeuicc.core.usb.UsbCcidContext
 import im.angry.openeuicc.util.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.lang.IllegalArgumentException
 
 open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccChannelFactory {
@@ -35,8 +37,8 @@ open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccCha
             DefaultEuiccChannelManager.TAG,
             "Trying OMAPI for physical slot ${port.card.physicalSlotIndex}"
         )
-        try {
-            return EuiccChannelImpl(
+        return try {
+            EuiccChannelImpl(
                 context.getString(R.string.channel_type_omapi),
                 port,
                 intrinsicChannelName = null,
@@ -49,8 +51,9 @@ open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccCha
                 context.preferenceRepository.verboseLoggingFlow,
                 context.preferenceRepository.ignoreTLSCertificateFlow,
             ).also {
-                Log.i(DefaultEuiccChannelManager.TAG, "Is OMAPI channel, setting MSS to 60")
-                it.lpa.setEs10xMss(60)
+                val mss = runBlocking { context.preferenceRepository.es10xMssFlow.first() }
+                Log.i(DefaultEuiccChannelManager.TAG, "Is OMAPI channel, setting MSS to $mss")
+                it.lpa.setEs10xMss(mss.toByte())
             }
         } catch (_: IllegalArgumentException) {
             // Failed
@@ -58,9 +61,8 @@ open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccCha
                 DefaultEuiccChannelManager.TAG,
                 "OMAPI APDU interface unavailable for physical slot ${port.card.physicalSlotIndex} with ISD-R AID: ${isdrAid.encodeHex()}."
             )
+            null
         }
-
-        return null
     }
 
     override fun tryOpenUsbEuiccChannel(
