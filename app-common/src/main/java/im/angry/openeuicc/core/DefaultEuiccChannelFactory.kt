@@ -7,8 +7,6 @@ import im.angry.openeuicc.common.R
 import im.angry.openeuicc.core.usb.UsbApduInterface
 import im.angry.openeuicc.core.usb.UsbCcidContext
 import im.angry.openeuicc.util.*
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import java.lang.IllegalArgumentException
 
 open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccChannelFactory {
@@ -50,11 +48,7 @@ open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccCha
                 isdrAid,
                 context.preferenceRepository.verboseLoggingFlow,
                 context.preferenceRepository.ignoreTLSCertificateFlow,
-            ).also {
-                val mss = runBlocking { context.preferenceRepository.es10xMssFlow.first() }
-                Log.i(DefaultEuiccChannelManager.TAG, "Is OMAPI channel, setting MSS to $mss")
-                it.lpa.setEs10xMss(mss.toByte())
-            }
+            )
         } catch (_: IllegalArgumentException) {
             // Failed
             Log.w(

@@ -100,6 +100,12 @@ open class DefaultEuiccChannelManager(
                 tryOpenChannelFirstValidAid { euiccChannelFactory.tryOpenEuiccChannel(port, it) }
 
             if (channel != null) {
+                val mss = context.preferenceRepository.es10xMssFlow.first()
+                Log.i(TAG, "Set ${channel.type} channel, ES10x MSS to $mss")
+                channel.lpa.setEs10xMss(mss.toByte())
+            }
+
+            if (channel != null) {
                 channelCache.add(channel)
                 return channel
             } else {
