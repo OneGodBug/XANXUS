@@ -38,7 +38,7 @@ class MyVersioningPlugin: Plugin<Project> {
         target.configure<BaseAppModuleExtension> {
             defaultConfig {
                 versionCode = target.gitVersionCode
-                versionName = target.gitVersionName
+                versionName = target.gitVersionName.removePrefix("unpriv-")
             }
 
             applicationVariants.all {
