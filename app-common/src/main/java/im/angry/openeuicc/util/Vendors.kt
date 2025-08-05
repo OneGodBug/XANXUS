@@ -12,23 +12,16 @@ data class EuiccVendorInfo(
     val firmwareVersion: String?,
 )
 
-private val EUICC_VENDORS: Array<EuiccVendor> = arrayOf(EstkMe(), SimLink())
+private val EUICC_VENDORS: Array<EuiccVendor> = arrayOf(ESTKme(), SIMLink())
 
-fun EuiccChannel.tryParseEuiccVendorInfo(): EuiccVendorInfo? {
-    EUICC_VENDORS.forEach { vendor ->
-        vendor.tryParseEuiccVendorInfo(this@tryParseEuiccVendorInfo)?.let {
-            return it
-        }
-    }
-
-    return null
-}
+fun EuiccChannel.tryParseEuiccVendorInfo() =
+    EUICC_VENDORS.firstNotNullOfOrNull { it.tryParseEuiccVendorInfo(this) }
 
 interface EuiccVendor {
     fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo?
 }
 
-private class EstkMe : EuiccVendor {
+private class ESTKme : EuiccVendor {
     companion object {
         private val PRODUCT_AID = "A06573746B6D65FFFFFFFFFFFF6D6774".decodeHex()
         private val PRODUCT_ATR_FPR = "estk.me".encodeToByteArray()
@@ -75,17 +68,32 @@ private class EstkMe : EuiccVendor {
     }
 }
 
-private class SimLink : EuiccVendor {
-    companion object {
-        private val EID_PATTERN = Regex("^89044045(84|21)67274948")
+private class SIMLink : EuiccVendor {
+    private val patterns = buildMap {
+        put(Regex("^89044045(84|21)67274948"), ::detectBasedKigenSKUName)
     }
 
     override fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo? {
         val eid = channel.lpa.eID
-        val version = channel.lpa.euiccInfo2?.euiccFirmwareVersion
-        if (version == null || EID_PATTERN.find(eid, 0) == null) return null
+        for ((pattern, detect) in patterns) {
+            if (!pattern.matches(eid)) {
+                continue
+            }
+            return EuiccVendorInfo(
+                skuName = detect(channel) ?: continue,
+                serialNumber = null,
+                bootloaderVersion = null,
+                firmwareVersion = null
+            )
+        }
+        return null
+    }
+
+    private fun detectBasedKigenSKUName(channel: EuiccChannel): String? {
+        val version = channel.lpa.euiccInfo2?.euiccFirmwareVersion ?: return null
         val versionName = when {
             // @formatter:off
+            version >= Version(37,  4,  3) -> "v3.2 (beta 1)"
             version >= Version(37,  1, 41) -> "v3.1 (beta 1)"
             version >= Version(36, 18,  5) -> "v3 (final)"
             version >= Version(36, 17, 39) -> "v3 (beta)"
@@ -95,18 +103,6 @@ private class SimLink : EuiccVendor {
             // @formatter:on
             else -> null
         }
-
-        val skuName = if (versionName == null) {
-            "9eSIM"
-        } else {
-            "9eSIM $versionName"
-        }
-
-        return EuiccVendorInfo(
-            skuName = skuName,
-            serialNumber = null,
-            bootloaderVersion = null,
-            firmwareVersion = null
-        )
+        return if (versionName == null) "9eSIM" else "9eSIM $versionName"
     }
 }
