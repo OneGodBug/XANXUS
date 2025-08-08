@@ -8,6 +8,7 @@ plugins {
 apply {
     plugin<MyVersioningPlugin>()
     plugin<MySigningPlugin>()
+    plugin<MagiskModule>()
 }
 
 android {
