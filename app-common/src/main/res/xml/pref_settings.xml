@@ -96,7 +96,6 @@
         <Preference
             app:iconSpaceReserved="false"
             app:title="@string/pref_info_app_version"
-            app:enableCopying="true"
             app:key="pref_info_app_version" />
 
         <Preference
