@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="compatibility_check">兼容性检查</string>
     <string name="open_sim_toolkit">打开 SIM 卡应用程序</string>

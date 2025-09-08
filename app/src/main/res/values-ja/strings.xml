@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="no_euicc_priv">このデバイスで eUICC が見つかりません。\nデバイスによってはアプリのメニューからデュアル SIM を有効化する必要があります。</string>
     <string name="channel_type_telephony_manager">TelephonyManager (特権)</string>

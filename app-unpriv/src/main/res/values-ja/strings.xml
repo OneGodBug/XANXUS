@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="compatibility_check">互換性のチェック</string>
     <string name="open_sim_toolkit">SIM ツールキットを開く</string>
-    <!-- Settings -->
-    <!-- Toast -->
     <string name="toast_ara_m_copied">ARA-M SHA-1 をクリップボードにコピーしました</string>
     <string name="toast_prompt_to_enable_sim_toolkit">「%s」アプリを有効化してください</string>
     <string name="quick_compatibility">互換性のチェック</string>
