@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="no_euicc">在此裝置上未檢測到此應用程式可訪問的可插拔 eUICC 卡。請插入相容卡或 USB 晶片讀卡機。</string>
+    <string name="no_euicc">在此裝置上未檢測到此應用程式可存取的可插拔 eUICC 卡。請插入相容卡或 USB 晶片讀卡器。</string>
     <string name="no_profile">此 eSIM 上還沒有設定檔</string>
     <string name="euicc_info_unknown">未知</string>
-    <string name="notification_help">幫助</string>
+    <string name="notification_help">說明</string>
     <string name="profile_reload_slots">重新載入卡槽</string>
     <string name="profile_no_enabled_profile">未知</string>
     <string name="channel_name_format">虛擬卡槽 %d</string>
