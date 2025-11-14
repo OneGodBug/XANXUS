@@ -57,6 +57,9 @@ internal object PreferenceConstants {
 
         # ESTKme SE0
         A06573746B6D65FFFF4953442D522030
+        
+        # ESTKme SE1
+        A06573746B6D65FFFF4953442D522031
 
         # eSIM.me
         A0000005591010000000008900000300
