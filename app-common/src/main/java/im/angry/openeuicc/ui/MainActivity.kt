@@ -212,7 +212,7 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             ensureNotificationPermissions()
         }
 
-        ShortcutManagerCompat.setDynamicShortcuts(this, buildShortcuts())
+        ShortcutManagerCompat.setDynamicShortcuts(this, buildShortcuts().take(4))
 
         refreshing = false
     }

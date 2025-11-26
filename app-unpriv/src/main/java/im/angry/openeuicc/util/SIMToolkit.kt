@@ -14,11 +14,14 @@ import im.angry.openeuicc.core.EuiccChannelManager
 class SIMToolkit(private val context: Context) {
     private val slots = buildMap {
         fun getComponentNames(@ArrayRes id: Int) = context.resources
-            .getStringArray(id).mapNotNull(ComponentName::unflattenFromString)
+            .getStringArray(id).mapNotNull(ComponentName::unflattenFromString).toSet()
         put(-1, getComponentNames(R.array.sim_toolkit_slot_selection))
         put(0, getComponentNames(R.array.sim_toolkit_slot_1))
         put(1, getComponentNames(R.array.sim_toolkit_slot_2))
     }
+
+    val intents: Iterable<Intent?>
+        get() = listOf(get(0)?.intent, get(1)?.intent)
 
     operator fun get(slotId: Int): Slot? = when (slotId) {
         -1, EuiccChannelManager.USB_CHANNEL_ID -> null
@@ -60,6 +63,9 @@ class SIMToolkit(private val context: Context) {
         val intent: Intent?
             get() = getActivityIntent() ?: getDisabledPackageIntent()
     }
+
+    fun isSelection(intent: Intent) =
+        slots.getOrDefault(-1, emptySet()).contains(intent.component)
 
     companion object {
         fun getDisabledPackageName(intent: Intent?): String? {
