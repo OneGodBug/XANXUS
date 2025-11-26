@@ -4,6 +4,7 @@
     <string name="no_profile">No profiles (yet) on this eSIM.</string>
 
     <string name="notification_help">Help</string>
+    <string name="open_network_settings">Open Network Settings</string>
 
     <string name="profile_reload_slots">Reload Slots</string>
     <string name="profile_no_enabled_profile">Unknown</string>

@@ -15,4 +15,10 @@
         android:id="@+id/euicc_memory_reset"
         android:title="@string/euicc_memory_reset"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/open_network_settings"
+        android:title="@string/open_network_settings"
+        android:visible="false"
+        app:showAsAction="never" />
 </menu>

@@ -1,11 +1,14 @@
 package im.angry.openeuicc.ui
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.Menu
@@ -19,6 +22,7 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
@@ -29,6 +33,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.core.EuiccChannel
+import im.angry.openeuicc.core.EuiccChannelManager
 import im.angry.openeuicc.service.EuiccChannelManagerService
 import im.angry.openeuicc.service.EuiccChannelManagerService.Companion.waitDone
 import im.angry.openeuicc.ui.wizard.DownloadWizardActivity
@@ -57,16 +62,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileInfo
 
-open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
-    EuiccChannelFragmentMarker {
+open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener, EuiccChannelFragmentMarker {
     companion object {
         const val TAG = "EuiccManagementFragment"
 
-        fun newInstance(
-            slotId: Int,
-            portId: Int,
-            seId: EuiccChannel.SecureElementId
-        ): EuiccManagementFragment =
+        fun newInstance(slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId): EuiccManagementFragment =
             newInstanceEuicc(EuiccManagementFragment::class.java, slotId, portId, seId)
     }
 
@@ -94,11 +94,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         setHasOptionsMenu(true)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_euicc, container, false)
 
         swipeRefresh = view.requireViewById(R.id.swipe_refresh)
@@ -153,12 +149,16 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        menu.findItem(R.id.show_notifications).isVisible =
-            logicalSlotId != -1
-        menu.findItem(R.id.euicc_info).isVisible =
-            logicalSlotId != -1
-        menu.findItem(R.id.euicc_memory_reset).isVisible =
-            enabledProfile == null
+        menu.findItem(R.id.show_notifications)
+            .isVisible = logicalSlotId != -1
+        menu.findItem(R.id.euicc_info)
+            .isVisible = logicalSlotId != -1
+        menu.findItem(R.id.euicc_memory_reset)
+            .isVisible = enabledProfile == null
+        menu.findItem(R.id.open_network_settings).apply {
+            intent = getNetworkSettingsIntent()
+            isVisible = intent != null
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -189,10 +189,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         else -> super.onOptionsItemSelected(item)
     }
 
-    protected open suspend fun onCreateFooterViews(
-        parent: ViewGroup,
-        profiles: List<LocalProfileInfo>
-    ): List<View> =
+    protected open suspend fun onCreateFooterViews(parent: ViewGroup, profiles: List<LocalProfileInfo>): List<View> =
         if (profiles.isEmpty()) {
             val view = layoutInflater.inflate(R.layout.footer_no_profile, parent, false)
             listOf(view)
@@ -310,17 +307,14 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         }
     }
 
-    protected open fun populatePopupWithProfileActions(
-        popup: PopupMenu,
-        profile: LocalProfileInfo
-    ) {
+    protected open fun populatePopupWithProfileActions(popup: PopupMenu, profile: LocalProfileInfo) {
         popup.inflate(R.menu.profile_options)
         if (!profile.isEnabled) return
         popup.menu.findItem(R.id.enable).isVisible = false
         popup.menu.findItem(R.id.delete).isVisible = false
 
         // We hide the disable option by default to avoid "bricking" some cards that won't get
-        // recognized again by the phone's modem. However we don't have that worry if we are
+        // recognized again by the phone's modem. However, we don't have that worry if we are
         // accessing it through a USB card reader, or when the user explicitly opted in
         if (!isUsb && !disableSafeguardFlow.value) return
         popup.menu.findItem(R.id.disable).isVisible = true
@@ -539,5 +533,18 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         }
 
         override fun getItemCount(): Int = profiles.size + footerViews.size
+    }
+
+    private fun getNetworkSettingsIntent(): Intent? {
+        // on unprivileged apps, if it needs to use the feature
+        // please run "adb shell pm grant im.angry.easyeuicc android.permission.READ_PHONE_STATE"
+        if (slotId == -1 || slotId == EuiccChannelManager.USB_CHANNEL_ID) return null
+        val permission = ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_PHONE_STATE)
+        if (permission != PackageManager.PERMISSION_GRANTED) return null
+        val info = appContainer.subscriptionManager.getActiveSubscriptionInfoForSimSlotIndex(slotId) ?: return null
+        val intent = Intent(Settings.ACTION_NETWORK_OPERATOR_SETTINGS)
+        intent.putExtra(Settings.EXTRA_SUB_ID, info.subscriptionId)
+        if (intent.resolveActivity(requireContext().packageManager) == null) return null
+        return intent
     }
 }
