@@ -61,7 +61,11 @@ class SIMToolkit(private val context: Context) {
         }
 
         val intent: Intent?
-            get() = getActivityIntent() ?: getDisabledPackageIntent()
+            get() {
+                val intent = getActivityIntent() ?: getDisabledPackageIntent() ?: return null
+                if (intent.resolveActivity(packageManager) == null) return null
+                return intent
+            }
     }
 
     fun isSelection(intent: Intent) =
