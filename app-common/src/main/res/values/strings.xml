@@ -94,6 +94,7 @@
     <string name="download_wizard_progress_step_authenticating">Authenticating your device with server</string>
     <string name="download_wizard_progress_step_downloading">Downloading eSIM profile</string>
     <string name="download_wizard_progress_step_finalizing">Loading eSIM profile into storage</string>
+    <string name="download_wizard_screen_on_toast">Please keep the download in the foreground to avoid download failure.</string>
     <string name="download_wizard_diagnostics">Error diagnostics</string>
     <string name="download_wizard_diagnostics_error_code">Error code: %s</string>
     <string name="download_wizard_diagnostics_last_http_status">Last HTTP status (from server): %d</string>

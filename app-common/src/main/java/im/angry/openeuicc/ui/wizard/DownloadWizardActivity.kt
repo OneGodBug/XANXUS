@@ -1,6 +1,8 @@
 package im.angry.openeuicc.ui.wizard
 
+import android.Manifest
 import android.app.assist.AssistContent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -13,13 +15,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.core.EuiccChannelManager
 import im.angry.openeuicc.ui.BaseEuiccAccessActivity
-import im.angry.openeuicc.util.*
+import im.angry.openeuicc.util.LPAString
+import im.angry.openeuicc.util.OpenEuiccContextMarker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.typeblog.lpac_jni.LocalProfileAssistant
@@ -179,6 +183,19 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         state.confirmationCodeRequired = savedInstanceState.getBoolean("confirmationCodeRequired", state.confirmationCodeRequired)
     }
 
+    override fun onPause() {
+        super.onPause()
+        if (currentFragment?.keepScreenOn == true) {
+            val canPostNotification = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                    checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+                    android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (!canPostNotification) {
+                val resId = R.string.download_wizard_screen_on_toast
+                Toast.makeText(this, resId, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     private fun onPrevPressed() {
         hideIme()
 
@@ -264,25 +281,15 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
     }
 
     private fun refreshButtons() {
-        currentFragment?.let {
-            nextButton.visibility = if (it.hasNext) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
-            prevButton.visibility = if (it.hasPrev) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
-        }
+        if (currentFragment == null) return
+        nextButton.isVisible = currentFragment!!.hasNext
+        prevButton.isVisible = currentFragment!!.hasPrev
     }
 
     private fun hideIme() {
-        currentFocus?.let {
-            val imm = getSystemService(InputMethodManager::class.java)
-            imm.hideSoftInputFromWindow(it.windowToken, 0)
-        }
+        if (currentFocus == null) return
+        getSystemService(InputMethodManager::class.java)
+            .hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
     }
 
     abstract class DownloadWizardStepFragment : Fragment(), OpenEuiccContextMarker {
