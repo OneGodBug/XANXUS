@@ -526,7 +526,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
             R.drawable.ic_euicc_memory_reset
         ) {
             euiccChannelManager.beginTrackedOperation(slotId, portId, seId) {
-                euiccChannelManager.withEuiccChannel(slotId, portId) { channel ->
+                euiccChannelManager.withEuiccChannel(slotId, portId, seId) { channel ->
                     channel.lpa.euiccMemoryReset()
                 }
 

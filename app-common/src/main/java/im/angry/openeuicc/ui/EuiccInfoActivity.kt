@@ -72,7 +72,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             intent.getParcelableExtra("seId", EuiccChannel.SecureElementId::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getParcelableExtra("seId")!!
+            intent.getParcelableExtra("seId")
         } ?: EuiccChannel.SecureElementId.DEFAULT
 
         val channelTitle = if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
@@ -106,7 +106,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
         lifecycleScope.launch {
             (infoList.adapter!! as EuiccInfoAdapter).euiccInfoItems =
-                euiccChannelManager.withEuiccChannel(logicalSlotId, fn = ::buildEuiccInfoItems)
+                euiccChannelManager.withEuiccChannel(logicalSlotId, seId, fn = ::buildEuiccInfoItems)
 
             swipeRefresh.isRefreshing = false
         }

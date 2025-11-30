@@ -68,7 +68,7 @@ class NotificationsActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker 
             intent.getParcelableExtra("seId", EuiccChannel.SecureElementId::class.java)
         } else {
             @Suppress("DEPRECATION")
-            intent.getParcelableExtra("seId")!!
+            intent.getParcelableExtra("seId")
         } ?: EuiccChannel.SecureElementId.DEFAULT
 
         // This is slightly different from the MainActivity logic
@@ -132,7 +132,7 @@ class NotificationsActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker 
     private fun refresh() {
         launchTask {
             notificationAdapter.notifications =
-                euiccChannelManager.withEuiccChannel(logicalSlotId) { channel ->
+                euiccChannelManager.withEuiccChannel(logicalSlotId, seId) { channel ->
                     val nameMap = buildMap {
                         for (profile in channel.lpa.profiles) {
                             put(profile.iccid, profile.displayName)
