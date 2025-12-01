@@ -75,12 +75,7 @@ val <T> T.euiccChannelManagerService: EuiccChannelManagerService
 suspend fun <T, R> T.withEuiccChannel(fn: suspend (EuiccChannel) -> R): R
     where T : Fragment, T : EuiccChannelFragmentMarker {
     ensureEuiccChannelManager()
-    return euiccChannelManager.withEuiccChannel(
-        slotId,
-        portId,
-        seId,
-        fn
-    )
+    return euiccChannelManager.withEuiccChannel(slotId, portId, seId, fn)
 }
 
 suspend fun <T> T.ensureEuiccChannelManager() where T : Fragment, T : OpenEuiccContextMarker =
