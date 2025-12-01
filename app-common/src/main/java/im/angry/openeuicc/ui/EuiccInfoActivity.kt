@@ -46,7 +46,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     private var seId: EuiccChannel.SecureElementId = EuiccChannel.SecureElementId.DEFAULT
 
     data class Item(
-        @StringRes
+        @get:StringRes
         val titleResId: Int,
         val content: String?,
         val copiedToastResId: Int? = null,
@@ -121,17 +121,11 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             add(Item(R.string.euicc_info_isdr_aid, channel.isdrAid.encodeHex()))
         }
         channel.tryParseEuiccVendorInfo()?.let { vendorInfo ->
+            // @formatter:off
             vendorInfo.skuName?.let { add(Item(R.string.euicc_info_sku, it)) }
-            vendorInfo.serialNumber?.let {
-                add(
-                    Item(
-                        R.string.euicc_info_sn,
-                        it,
-                        copiedToastResId = R.string.toast_sn_copied
-                    )
-                )
-            }
+            vendorInfo.serialNumber?.let { add(Item(R.string.euicc_info_sn, it, copiedToastResId = R.string.toast_sn_copied)) }
             vendorInfo.firmwareVersion?.let { add(Item(R.string.euicc_info_fw_ver, it)) }
+            // @formatter:on
         }
         channel.lpa.euiccInfo2?.let { info ->
             add(Item(R.string.euicc_info_sgp22_version, info.sgp22Version.toString()))
