@@ -42,6 +42,14 @@ public final class UiccAccessRule implements Parcelable {
         }
     };
 
+    public UiccAccessRule(byte[] certificateHash, String packageName, long accessType) {
+
+    }
+
+    UiccAccessRule(Parcel in) {
+
+    }
+
     /**
      * Encode these access rules as a byte array which can be parsed with {@link #decodeRules}.
      *
@@ -69,12 +77,22 @@ public final class UiccAccessRule implements Parcelable {
         return null;
     }
 
-    public UiccAccessRule(byte[] certificateHash, String packageName, long accessType) {
-
+    /**
+     * Gets all of the Signatures from the given PackageInfo.
+     *
+     * @hide
+     */
+    public static List<Signature> getSignatures(PackageInfo packageInfo) {
+        return null;
     }
 
-    UiccAccessRule(Parcel in) {
-
+    /**
+     * Converts a Signature into a Certificate hash usable for comparison.
+     *
+     * @hide
+     */
+    public static byte[] getCertHash(Signature signature, String algo) {
+        return null;
     }
 
     @Override
@@ -149,23 +167,5 @@ public final class UiccAccessRule implements Parcelable {
     @Override
     public int describeContents() {
         return 0;
-    }
-
-    /**
-     * Gets all of the Signatures from the given PackageInfo.
-     *
-     * @hide
-     */
-    public static List<Signature> getSignatures(PackageInfo packageInfo) {
-        return null;
-    }
-
-    /**
-     * Converts a Signature into a Certificate hash usable for comparison.
-     *
-     * @hide
-     */
-    public static byte[] getCertHash(Signature signature, String algo) {
-        return null;
     }
 }

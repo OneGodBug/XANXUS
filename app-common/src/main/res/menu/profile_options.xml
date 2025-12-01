@@ -6,8 +6,8 @@
 
     <item
         android:id="@+id/disable"
-        android:visible="false"
-        android:title="@string/profile_disable" />
+        android:title="@string/profile_disable"
+        android:visible="false" />
 
     <item
         android:id="@+id/rename"

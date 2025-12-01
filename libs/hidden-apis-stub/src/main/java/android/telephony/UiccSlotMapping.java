@@ -6,16 +6,6 @@ import android.os.Parcelable;
 public final class UiccSlotMapping implements Parcelable {
     public static final Creator<UiccSlotMapping> CREATOR = null;
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        throw new RuntimeException("stub");
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
     /**
      *
      * @param portIndex         The port index is an enumeration of the ports available on the UICC.
@@ -25,6 +15,16 @@ public final class UiccSlotMapping implements Parcelable {
      */
     public UiccSlotMapping(int portIndex, int physicalSlotIndex, int logicalSlotIndex) {
         throw new RuntimeException("stub");
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        throw new RuntimeException("stub");
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     /**

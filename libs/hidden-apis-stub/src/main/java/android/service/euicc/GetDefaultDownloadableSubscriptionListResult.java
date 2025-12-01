@@ -45,6 +45,17 @@ public final class GetDefaultDownloadableSubscriptionListResult implements Parce
     public final int result = 0;
 
     /**
+     * Construct a new {@link GetDefaultDownloadableSubscriptionListResult}.
+     */
+    public GetDefaultDownloadableSubscriptionListResult(int result,
+                                                        DownloadableSubscription[] subscriptions) {
+
+    }
+
+    private GetDefaultDownloadableSubscriptionListResult(Parcel in) {
+    }
+
+    /**
      * Gets the result of the operation.
      */
     public int getResult() {
@@ -56,17 +67,6 @@ public final class GetDefaultDownloadableSubscriptionListResult implements Parce
      */
     public List<DownloadableSubscription> getDownloadableSubscriptions() {
         return null;
-    }
-
-    /**
-     * Construct a new {@link GetDefaultDownloadableSubscriptionListResult}.
-     */
-    public GetDefaultDownloadableSubscriptionListResult(int result,
-                                                        DownloadableSubscription[] subscriptions) {
-
-    }
-
-    private GetDefaultDownloadableSubscriptionListResult(Parcel in) {
     }
 
     @Override

@@ -103,100 +103,6 @@ public final class EuiccProfileInfo implements Parcelable {
 
     }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    /**
-     * The builder to build a new {@link EuiccProfileInfo} instance.
-     */
-    public static final class Builder {
-
-        public Builder(String value) {
-
-        }
-
-        public Builder(EuiccProfileInfo baseProfile) {
-
-        }
-
-        /**
-         * Builds the profile instance.
-         */
-        public EuiccProfileInfo build() {
-            return null;
-        }
-
-        /**
-         * Sets the iccId of the subscription.
-         */
-        public Builder setIccid(String value) {
-            return this;
-        }
-
-        /**
-         * Sets the nickname of the subscription.
-         */
-        public Builder setNickname(String value) {
-            return this;
-        }
-
-        /**
-         * Sets the service provider name of the subscription.
-         */
-        public Builder setServiceProviderName(String value) {
-            return this;
-        }
-
-        /**
-         * Sets the profile name of the subscription.
-         */
-        public Builder setProfileName(String value) {
-            return this;
-        }
-
-        /**
-         * Sets the profile class of the subscription.
-         */
-        public Builder setProfileClass(int value) {
-            return this;
-        }
-
-        /**
-         * Sets the state of the subscription.
-         */
-        public Builder setState(int value) {
-            return this;
-        }
-
-        /**
-         * Sets the carrier identifier of the subscription.
-         */
-        public Builder setCarrierIdentifier(CarrierIdentifier value) {
-            return this;
-        }
-
-        /**
-         * Sets the policy rules of the subscription.
-         */
-        public Builder setPolicyRules(int value) {
-            return this;
-        }
-
-        /**
-         * Sets the access rules of the subscription.
-         */
-        public Builder setUiccAccessRule(List<UiccAccessRule> value) {
-            return this;
-        }
-    }
-
     private EuiccProfileInfo(
         String iccid,
         String nickname,
@@ -208,6 +114,16 @@ public final class EuiccProfileInfo implements Parcelable {
         int policyRules,
         List<UiccAccessRule> accessRules) {
 
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
     /**
@@ -301,5 +217,89 @@ public final class EuiccProfileInfo implements Parcelable {
     @Override
     public String toString() {
         return null;
+    }
+
+    /**
+     * The builder to build a new {@link EuiccProfileInfo} instance.
+     */
+    public static final class Builder {
+
+        public Builder(String value) {
+
+        }
+
+        public Builder(EuiccProfileInfo baseProfile) {
+
+        }
+
+        /**
+         * Builds the profile instance.
+         */
+        public EuiccProfileInfo build() {
+            return null;
+        }
+
+        /**
+         * Sets the iccId of the subscription.
+         */
+        public Builder setIccid(String value) {
+            return this;
+        }
+
+        /**
+         * Sets the nickname of the subscription.
+         */
+        public Builder setNickname(String value) {
+            return this;
+        }
+
+        /**
+         * Sets the service provider name of the subscription.
+         */
+        public Builder setServiceProviderName(String value) {
+            return this;
+        }
+
+        /**
+         * Sets the profile name of the subscription.
+         */
+        public Builder setProfileName(String value) {
+            return this;
+        }
+
+        /**
+         * Sets the profile class of the subscription.
+         */
+        public Builder setProfileClass(int value) {
+            return this;
+        }
+
+        /**
+         * Sets the state of the subscription.
+         */
+        public Builder setState(int value) {
+            return this;
+        }
+
+        /**
+         * Sets the carrier identifier of the subscription.
+         */
+        public Builder setCarrierIdentifier(CarrierIdentifier value) {
+            return this;
+        }
+
+        /**
+         * Sets the policy rules of the subscription.
+         */
+        public Builder setPolicyRules(int value) {
+            return this;
+        }
+
+        /**
+         * Sets the access rules of the subscription.
+         */
+        public Builder setUiccAccessRule(List<UiccAccessRule> value) {
+            return this;
+        }
     }
 }

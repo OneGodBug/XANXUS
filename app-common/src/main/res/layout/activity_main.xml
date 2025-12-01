@@ -8,24 +8,24 @@
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/main_tabs"
-        android:background="?attr/colorSurfaceVariant"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/colorSurfaceVariant"
         android:visibility="gone"
-        app:tabTextColor="?attr/colorOnSurfaceVariant"
-        app:tabSelectedTextColor="?attr/colorOnSurfaceVariant"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:tabSelectedTextColor="?attr/colorOnSurfaceVariant"
+        app:tabTextColor="?attr/colorOnSurfaceVariant" />
 
     <ProgressBar
         android:id="@+id/loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:indeterminate="true"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/main_tabs"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/main_tabs" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/view_pager"

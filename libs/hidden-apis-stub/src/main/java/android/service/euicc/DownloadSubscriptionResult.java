@@ -40,6 +40,9 @@ public final class DownloadSubscriptionResult implements Parcelable {
 
     }
 
+    private DownloadSubscriptionResult(Parcel in) {
+    }
+
     /**
      * Gets the result of the operation.
      */
@@ -70,8 +73,5 @@ public final class DownloadSubscriptionResult implements Parcelable {
     @Override
     public int describeContents() {
         return 0;
-    }
-
-    private DownloadSubscriptionResult(Parcel in) {
     }
 }

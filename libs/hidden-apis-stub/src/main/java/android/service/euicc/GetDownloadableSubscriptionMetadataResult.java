@@ -43,6 +43,18 @@ public final class GetDownloadableSubscriptionMetadataResult implements Parcelab
     public final int result = 0;
 
     /**
+     * Construct a new {@link GetDownloadableSubscriptionMetadataResult}.
+     */
+    public GetDownloadableSubscriptionMetadataResult(int result,
+                                                     DownloadableSubscription subscription) {
+
+    }
+
+    private GetDownloadableSubscriptionMetadataResult(Parcel in) {
+
+    }
+
+    /**
      * Gets the result of the operation.
      */
     public int getResult() {
@@ -54,18 +66,6 @@ public final class GetDownloadableSubscriptionMetadataResult implements Parcelab
      */
     public DownloadableSubscription getDownloadableSubscription() {
         return null;
-    }
-
-    /**
-     * Construct a new {@link GetDownloadableSubscriptionMetadataResult}.
-     */
-    public GetDownloadableSubscriptionMetadataResult(int result,
-                                                     DownloadableSubscription subscription) {
-
-    }
-
-    private GetDownloadableSubscriptionMetadataResult(Parcel in) {
-
     }
 
     @Override

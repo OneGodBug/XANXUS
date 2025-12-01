@@ -44,6 +44,21 @@ public final class GetEuiccProfileInfoListResult implements Parcelable {
     public final int result = 0;
 
     /**
+     * Construct a new {@link GetEuiccProfileInfoListResult}.
+     *
+     * @param isRemovable whether the eUICC in this slot is removable. If true, the profiles
+     *                    returned here will only be considered accessible as long as this eUICC is present.
+     *                    Otherwise, they will remain accessible until the next time a response with isRemovable
+     *                    set to false is returned.
+     */
+    public GetEuiccProfileInfoListResult(
+        int result, EuiccProfileInfo[] profiles, boolean isRemovable) {
+    }
+
+    private GetEuiccProfileInfoListResult(Parcel in) {
+    }
+
+    /**
      * Gets the result of the operation.
      */
     public int getResult() {
@@ -62,21 +77,6 @@ public final class GetEuiccProfileInfoListResult implements Parcelable {
      */
     public boolean getIsRemovable() {
         return false;
-    }
-
-    /**
-     * Construct a new {@link GetEuiccProfileInfoListResult}.
-     *
-     * @param isRemovable whether the eUICC in this slot is removable. If true, the profiles
-     *                    returned here will only be considered accessible as long as this eUICC is present.
-     *                    Otherwise, they will remain accessible until the next time a response with isRemovable
-     *                    set to false is returned.
-     */
-    public GetEuiccProfileInfoListResult(
-        int result, EuiccProfileInfo[] profiles, boolean isRemovable) {
-    }
-
-    private GetEuiccProfileInfoListResult(Parcel in) {
     }
 
     @Override

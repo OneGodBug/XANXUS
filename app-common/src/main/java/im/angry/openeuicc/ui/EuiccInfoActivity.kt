@@ -22,7 +22,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.core.EuiccChannel
 import im.angry.openeuicc.core.EuiccChannelManager
-import im.angry.openeuicc.util.*
+import im.angry.openeuicc.util.EUICC_DEFAULT_ISDR_AID
+import im.angry.openeuicc.util.OpenEuiccContextMarker
+import im.angry.openeuicc.util.decodeHex
+import im.angry.openeuicc.util.encodeHex
+import im.angry.openeuicc.util.formatFreeSpace
+import im.angry.openeuicc.util.setupRootViewInsets
+import im.angry.openeuicc.util.setupToolbarInsets
+import im.angry.openeuicc.util.tryParseEuiccVendorInfo
 import kotlinx.coroutines.launch
 import net.typeblog.lpac_jni.impl.PKID_GSMA_LIVE_CI
 import net.typeblog.lpac_jni.impl.PKID_GSMA_TEST_CI

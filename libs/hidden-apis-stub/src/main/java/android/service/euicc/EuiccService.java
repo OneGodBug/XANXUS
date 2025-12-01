@@ -249,18 +249,6 @@ public abstract class EuiccService extends Service {
     }
 
     /**
-     * Callback class for {@link #onStartOtaIfNecessary(int, OtaStatusChangedCallback)}
-     * <p>
-     * The status of OTA which can be {@code android.telephony.euicc.EuiccManager#EUICC_OTA_}
-     */
-    public abstract static class OtaStatusChangedCallback {
-        /**
-         * Called when OTA status is changed.
-         */
-        public abstract void onOtaStatusChanged(int status);
-    }
-
-    /**
      * Return the EID of the eUICC.
      *
      * @param slotId ID of the SIM slot being queried.
@@ -499,5 +487,17 @@ public abstract class EuiccService extends Service {
      */
     public void dump(PrintWriter printWriter) {
         printWriter.println("The connected LPA does not implement EuiccService#dump()");
+    }
+
+    /**
+     * Callback class for {@link #onStartOtaIfNecessary(int, OtaStatusChangedCallback)}
+     * <p>
+     * The status of OTA which can be {@code android.telephony.euicc.EuiccManager#EUICC_OTA_}
+     */
+    public abstract static class OtaStatusChangedCallback {
+        /**
+         * Called when OTA status is changed.
+         */
+        public abstract void onOtaStatusChanged(int status);
     }
 }

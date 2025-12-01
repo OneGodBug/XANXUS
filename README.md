@@ -87,14 +87,17 @@ There are two ways to include OpenEUICC in your AOSP-based system image:
 
 1. Include this project and its [dependencies](https://gitea.angry.im/PeterCxy/android_prebuilts_openeuicc-deps) inside
    the AOSP tree.
-  - If inclusion in `manifest.xml` is required, remember to set the `sync-s` option to clone submodules.
-  - The module name is `OpenEUICC`. You can include it in `PRODUCT_PACKAGES`, or simply build it standalone using `mm`.
-  - Compilation of this project is **only** tested against the latest AOSP release version. The app itself should be
-    compatible with older AOSP versions, but the source may not compile against an older AOSP source tree.
+
+- If inclusion in `manifest.xml` is required, remember to set the `sync-s` option to clone submodules.
+- The module name is `OpenEUICC`. You can include it in `PRODUCT_PACKAGES`, or simply build it standalone using `mm`.
+- Compilation of this project is **only** tested against the latest AOSP release version. The app itself should be
+  compatible with older AOSP versions, but the source may not compile against an older AOSP source tree.
+
 2. If compilation against AOSP source tree is not possible, consider [building with gradle](#building-gradle) and import
    the apk as a prebuilt.
-  - No official `Android.bp` is provided for this case but it should be straightforward to write.
-  - You might want to include [`privapp_whitelist_im.angry.openeuicc.xml`] as well.
+
+- No official `Android.bp` is provided for this case but it should be straightforward to write.
+- You might want to include [`privapp_whitelist_im.angry.openeuicc.xml`] as well.
 
 [`privapp_whitelist_im.angry.openeuicc.xml`]: privapp_whitelist_im.angry.openeuicc.xml "OpenEUICC Privapp Whitelist"
 
