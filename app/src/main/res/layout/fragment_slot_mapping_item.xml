@@ -9,6 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:orientation="horizontal">
+
         <TextView
             android:id="@+id/slot_mapping_logical_slot"
             android:textSize="14sp"

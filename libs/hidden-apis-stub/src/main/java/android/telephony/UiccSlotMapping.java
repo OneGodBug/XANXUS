@@ -18,9 +18,9 @@ public final class UiccSlotMapping implements Parcelable {
 
     /**
      *
-     * @param portIndex The port index is an enumeration of the ports available on the UICC.
+     * @param portIndex         The port index is an enumeration of the ports available on the UICC.
      * @param physicalSlotIndex is unique index referring to a physical SIM slot.
-     * @param logicalSlotIndex is unique index referring to a logical SIM slot.
+     * @param logicalSlotIndex  is unique index referring to a logical SIM slot.
      *
      */
     public UiccSlotMapping(int portIndex, int physicalSlotIndex, int logicalSlotIndex) {

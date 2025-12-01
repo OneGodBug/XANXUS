@@ -36,7 +36,7 @@ abstract class BaseEuiccAccessActivity : AppCompatActivity() {
         bindService(
             Intent(this, EuiccChannelManagerService::class.java),
             euiccChannelManagerServiceConnection,
-            Context.BIND_AUTO_CREATE
+            BIND_AUTO_CREATE
         )
     }
 

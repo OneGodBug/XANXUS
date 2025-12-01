@@ -61,7 +61,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
                 Intent(
                     this@OpenEuiccService,
                     EuiccChannelManagerService::class.java
-                ), Context.BIND_AUTO_CREATE
+                ), BIND_AUTO_CREATE
             )
         }
 
