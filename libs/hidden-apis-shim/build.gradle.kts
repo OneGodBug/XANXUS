@@ -4,13 +4,11 @@ plugins {
 }
 
 android {
+    namespace = "im.angry.openeuicc.hidden_apis_shim"
     compileSdk = 32
 
     defaultConfig {
         minSdk = 30
-        targetSdk = 32
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -26,7 +24,6 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
-    namespace = "im.angry.openeuicc.hidden_apis_shim"
 }
 
 dependencies {
