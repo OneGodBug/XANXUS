@@ -509,6 +509,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
                     euiccChannelManager.waitForReconnect(
                         slotId,
                         portId,
+                        seId,
                         reconnectTimeoutMillis / 10 * 9
                     )
                 }

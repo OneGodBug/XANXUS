@@ -114,7 +114,7 @@ open class DefaultEuiccChannelManager(
 
     private suspend fun tryOpenEuiccChannel(
         port: UiccPortInfoCompat,
-        seId: EuiccChannel.SecureElementId = EuiccChannel.SecureElementId.DEFAULT
+        seId: EuiccChannel.SecureElementId
     ): EuiccChannel? {
         lock.withLock {
             if (port.card.physicalSlotIndex == EuiccChannelManager.USB_CHANNEL_ID) {
@@ -162,7 +162,7 @@ open class DefaultEuiccChannelManager(
 
     protected suspend fun findEuiccChannelByLogicalSlot(
         logicalSlotId: Int,
-        seId: EuiccChannel.SecureElementId = EuiccChannel.SecureElementId.DEFAULT
+        seId: EuiccChannel.SecureElementId
     ): EuiccChannel? =
         withContext(Dispatchers.IO) {
             if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
@@ -180,14 +180,17 @@ open class DefaultEuiccChannelManager(
             null
         }
 
-    private suspend fun findAllEuiccChannelsByPhysicalSlot(physicalSlotId: Int): List<EuiccChannel>? {
+    private suspend fun findAllEuiccChannelsByPhysicalSlot(
+        physicalSlotId: Int,
+        seId: EuiccChannel.SecureElementId
+    ): List<EuiccChannel>? {
         if (physicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
             return usbChannels.ifEmpty { null }
         }
 
         for (card in uiccCards) {
             if (card.physicalSlotIndex != physicalSlotId) continue
-            return card.ports.mapNotNull { tryOpenEuiccChannel(it) }
+            return card.ports.mapNotNull { tryOpenEuiccChannel(it, seId) }
                 .ifEmpty { null }
         }
         return null
@@ -196,7 +199,7 @@ open class DefaultEuiccChannelManager(
     private suspend fun findEuiccChannelByPort(
         physicalSlotId: Int,
         portId: Int,
-        seId: EuiccChannel.SecureElementId = EuiccChannel.SecureElementId.DEFAULT
+        seId: EuiccChannel.SecureElementId
     ): EuiccChannel? =
         withContext(Dispatchers.IO) {
             if (physicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
@@ -208,22 +211,22 @@ open class DefaultEuiccChannelManager(
             }
         }
 
-    override suspend fun findFirstAvailablePort(physicalSlotId: Int): Int =
+    override suspend fun findFirstAvailablePort(physicalSlotId: Int, seId: EuiccChannel.SecureElementId): Int =
         withContext(Dispatchers.IO) {
             if (physicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
                 return@withContext 0
             }
 
-            findAllEuiccChannelsByPhysicalSlot(physicalSlotId)?.getOrNull(0)?.portId ?: -1
+            findAllEuiccChannelsByPhysicalSlot(physicalSlotId, seId)?.getOrNull(0)?.portId ?: -1
         }
 
-    override suspend fun findAvailablePorts(physicalSlotId: Int): List<Int> =
+    override suspend fun findAvailablePorts(physicalSlotId: Int, seId: EuiccChannel.SecureElementId): List<Int> =
         withContext(Dispatchers.IO) {
             if (physicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
                 return@withContext listOf(0)
             }
 
-            findAllEuiccChannelsByPhysicalSlot(physicalSlotId)?.map { it.portId }?.toSet()?.toList()
+            findAllEuiccChannelsByPhysicalSlot(physicalSlotId, seId)?.map { it.portId }?.toSet()?.toList()
                 ?: listOf()
         }
 
@@ -262,7 +265,12 @@ open class DefaultEuiccChannelManager(
         }
     }
 
-    override suspend fun waitForReconnect(physicalSlotId: Int, portId: Int, timeoutMillis: Long) {
+    override suspend fun waitForReconnect(
+        physicalSlotId: Int,
+        portId: Int,
+        seId: EuiccChannel.SecureElementId,
+        timeoutMillis: Long
+    ) {
         if (physicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
             usbChannels.forEach { it.close() }
             usbChannels.clear()
@@ -285,11 +293,11 @@ open class DefaultEuiccChannelManager(
                     } else {
                         // tryOpenEuiccChannel() will automatically dispose of invalid channels
                         // and recreate when needed
-                        findEuiccChannelByPort(physicalSlotId, portId)!!
+                        findEuiccChannelByPort(physicalSlotId, portId, seId)!!
                     }
                     check(channel.valid) { "Invalid channel" }
                     break
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     Log.d(
                         TAG,
                         "Slot $physicalSlotId port $portId reconnect failure, retrying in 1000 ms"
@@ -301,16 +309,12 @@ open class DefaultEuiccChannelManager(
     }
 
     override fun flowInternalEuiccPorts(): Flow<Pair<Int, Int>> = flow {
-        uiccCards.forEach { info ->
-            info.ports.forEach { port ->
-                tryOpenEuiccChannel(port)?.also {
-                    Log.d(
-                        TAG,
-                        "Found eUICC on slot ${info.physicalSlotIndex} port ${port.portIndex}"
-                    )
-
-                    emit(Pair(info.physicalSlotIndex, port.portIndex))
-                }
+        val seId = EuiccChannel.SecureElementId.DEFAULT
+        for (info in uiccCards) {
+            for (port in info.ports) {
+                if (tryOpenEuiccChannel(port, seId) == null) continue
+                Log.d(TAG, "Found eUICC on slot ${info.physicalSlotIndex} port ${port.portIndex}")
+                emit(Pair(info.physicalSlotIndex, port.portIndex))
             }
         }
     }.flowOn(Dispatchers.IO)
@@ -322,10 +326,7 @@ open class DefaultEuiccChannelManager(
             }
         })
 
-    override fun flowEuiccSecureElements(
-        slotId: Int,
-        portId: Int
-    ): Flow<EuiccChannel.SecureElementId> = flow {
+    override fun flowEuiccSecureElements(slotId: Int, portId: Int): Flow<EuiccChannel.SecureElementId> = flow {
         // Emit the "default" channel first
         // TODO: This function below should really return a list, not just one SE
         findEuiccChannelByPort(slotId, portId, seId = EuiccChannel.SecureElementId.DEFAULT)?.let {

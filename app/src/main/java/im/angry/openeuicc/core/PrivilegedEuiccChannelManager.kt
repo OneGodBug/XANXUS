@@ -33,8 +33,8 @@ class PrivilegedEuiccChannelManager(appContainer: AppContainer, context: Context
         }
     }
 
-    override suspend fun notifyEuiccProfilesChanged(logicalSlotId: Int) {
-        val channel = findEuiccChannelByLogicalSlot(logicalSlotId) ?: return
+    override suspend fun notifyEuiccProfilesChanged(logicalSlotId: Int, seId: EuiccChannel.SecureElementId) {
+        val channel = findEuiccChannelByLogicalSlot(logicalSlotId, seId) ?: return
         appContainer.subscriptionManager.tryRefreshCachedEuiccInfo(channel.cardId)
     }
 }

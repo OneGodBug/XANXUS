@@ -229,7 +229,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
             logicalSlotId = channel.logicalSlotId
             eid = channel.lpa.eID
             enabledProfile = channel.lpa.profiles.enabled
-            euiccChannelManager.notifyEuiccProfilesChanged(channel.logicalSlotId)
+            euiccChannelManager.notifyEuiccProfilesChanged(channel.logicalSlotId, seId)
             if (unfilteredProfileListFlow.value)
                 channel.lpa.profiles
             else

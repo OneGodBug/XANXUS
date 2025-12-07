@@ -90,7 +90,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
     }
 
     override fun onGetEid(slotId: Int): String? = withEuiccChannelManager {
-        val portId = euiccChannelManager.findFirstAvailablePort(slotId)
+        val portId = euiccChannelManager.findFirstAvailablePort(slotId, seId)
         if (portId < 0) return@withEuiccChannelManager null
         euiccChannelManager.withEuiccChannel(slotId, portId, seId) { channel ->
             channel.lpa.eID
@@ -189,7 +189,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
             }
 
             // TODO: Temporarily enable the slot to access its profiles if it is currently unmapped
-            val port = euiccChannelManager.findFirstAvailablePort(slotId)
+            val port = euiccChannelManager.findFirstAvailablePort(slotId, seId)
             if (port == -1) {
                 return@withEuiccChannelManager GetEuiccProfileInfoListResult(
                     RESULT_FIRST_USER,
@@ -249,7 +249,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
         Log.i(TAG, "onDeleteSubscription slotId=$slotId iccid=$iccid")
         if (shouldIgnoreSlot(slotId)) return@withEuiccChannelManager RESULT_FIRST_USER
 
-        val ports = euiccChannelManager.findAvailablePorts(slotId)
+        val ports = euiccChannelManager.findAvailablePorts(slotId, seId)
         if (ports.isEmpty()) return@withEuiccChannelManager RESULT_FIRST_USER
 
         // Check that the profile has been disabled on all slots
@@ -305,7 +305,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
             val (foundSlotId, foundPortId) = retryWithTimeout(5000) {
                 if (portIndex == -1) {
                     // If port is not indicated, we can use any port
-                    val port = euiccChannelManager.findFirstAvailablePort(slotId).let {
+                    val port = euiccChannelManager.findFirstAvailablePort(slotId, seId).let {
                         if (it < 0) {
                             throw IllegalStateException("No mapped port available; may need to try again")
                         }
@@ -400,7 +400,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
                 "onUpdateSubscriptionNickname slotId=$slotId iccid=$iccid nickname=$nickname"
             )
             if (shouldIgnoreSlot(slotId)) return@withEuiccChannelManager RESULT_FIRST_USER
-            val port = euiccChannelManager.findFirstAvailablePort(slotId)
+            val port = euiccChannelManager.findFirstAvailablePort(slotId, seId)
             if (port < 0) {
                 return@withEuiccChannelManager RESULT_FIRST_USER
             }

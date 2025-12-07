@@ -62,18 +62,23 @@ interface EuiccChannelManager {
      * If the port is currently valid, this function will return immediately.
      * On timeout, the caller can decide to either try again later, or alert the user with an error
      */
-    suspend fun waitForReconnect(physicalSlotId: Int, portId: Int, timeoutMillis: Long = 1000)
+    suspend fun waitForReconnect(
+        physicalSlotId: Int,
+        portId: Int,
+        seId: EuiccChannel.SecureElementId,
+        timeoutMillis: Long = 1000
+    )
 
     /**
      * Returns the first mapped & available port ID for a physical slot, or -1 if
      * not found.
      */
-    suspend fun findFirstAvailablePort(physicalSlotId: Int): Int
+    suspend fun findFirstAvailablePort(physicalSlotId: Int, seId: EuiccChannel.SecureElementId): Int
 
     /**
      * Returns all mapped & available port IDs for a physical slot.
      */
-    suspend fun findAvailablePorts(physicalSlotId: Int): List<Int>
+    suspend fun findAvailablePorts(physicalSlotId: Int, seId: EuiccChannel.SecureElementId): List<Int>
 
     class EuiccChannelNotFoundException : Exception("EuiccChannel not found")
 
@@ -103,7 +108,7 @@ interface EuiccChannelManager {
      * This is only expected to be implemented when the application is privileged
      * TODO: Remove this from the common interface
      */
-    suspend fun notifyEuiccProfilesChanged(logicalSlotId: Int) {
+    suspend fun notifyEuiccProfilesChanged(logicalSlotId: Int, seId: EuiccChannel.SecureElementId) {
         // no-op by default
     }
 }

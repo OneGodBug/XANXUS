@@ -164,7 +164,7 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
                     // Request the system to refresh the list of profiles every time we start
                     // Note that this is currently supposed to be no-op when unprivileged,
                     // but it could change in the future
-                    euiccChannelManager.notifyEuiccProfilesChanged(channel.logicalSlotId)
+                    euiccChannelManager.notifyEuiccProfilesChanged(channel.logicalSlotId, seId)
 
                     val channelName =
                         appContainer.customizableTextProvider.formatNonUsbChannelName(channel.logicalSlotId)
