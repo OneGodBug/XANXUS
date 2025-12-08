@@ -58,16 +58,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileInfo
 
-open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
-    EuiccChannelFragmentMarker {
+open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener, EuiccChannelFragmentMarker {
     companion object {
         const val TAG = "EuiccManagementFragment"
 
-        fun newInstance(
-            slotId: Int,
-            portId: Int,
-            seId: EuiccChannel.SecureElementId
-        ): EuiccManagementFragment =
+        fun newInstance(slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId) =
             newInstanceEuicc(EuiccManagementFragment::class.java, slotId, portId, seId)
     }
 
@@ -106,8 +101,12 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         fab = view.requireViewById(R.id.fab)
         profileList = view.requireViewById(R.id.profile_list)
 
-        val origFabMarginRight = (fab.layoutParams as ViewGroup.MarginLayoutParams).rightMargin
-        val origFabMarginBottom = (fab.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+        val origFabMarginRight: Int
+        val origFabMarginBottom: Int
+        with(fab.layoutParams as ViewGroup.MarginLayoutParams) {
+            origFabMarginRight = rightMargin
+            origFabMarginBottom = bottomMargin
+        }
         ViewCompat.setOnApplyWindowInsetsListener(fab) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 
@@ -120,6 +119,11 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         }
 
         setupRootViewInsets(profileList)
+
+        profileList.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(view: RecyclerView, newState: Int) =
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) fab.show() else fab.hide()
+        })
 
         return view
     }
@@ -191,16 +195,18 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         else -> super.onOptionsItemSelected(item)
     }
 
-    protected open suspend fun onCreateFooterViews(
-        parent: ViewGroup,
-        profiles: List<LocalProfileInfo>
-    ): List<View> =
-        if (profiles.isEmpty()) {
-            val view = layoutInflater.inflate(R.layout.footer_no_profile, parent, false)
-            listOf(view)
-        } else {
-            listOf()
+    protected open suspend fun onCreateFooterViews(parent: ViewGroup, profiles: List<LocalProfileInfo>) =
+        buildList<View> {
+            if (profiles.isEmpty()) {
+                val view = layoutInflater.inflate(
+                    /* resource = */ R.layout.footer_no_profile,
+                    /* root = */ parent,
+                    /* attachToRoot = */ false,
+                )
+                add(view)
+            }
         }
+
 
     private fun refresh() {
         if (invalid) return
@@ -312,10 +318,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         }
     }
 
-    protected open fun populatePopupWithProfileActions(
-        popup: PopupMenu,
-        profile: LocalProfileInfo
-    ) {
+    protected open fun populatePopupWithProfileActions(popup: PopupMenu, profile: LocalProfileInfo) {
         popup.inflate(R.menu.profile_options)
         if (!profile.isEnabled) return
         popup.menu.findItem(R.id.enable).isVisible = false
@@ -334,8 +337,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
             FOOTER(1);
 
             companion object {
-                fun fromInt(value: Int) =
-                    entries.first { it.value == value }
+                fun fromInt(value: Int) = entries.first { it.value == value }
             }
         }
     }
@@ -370,11 +372,9 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
 
         init {
             iccid.setOnClickListener {
-                if (iccid.transformationMethod == null) {
-                    iccid.transformationMethod = PasswordTransformationMethod.getInstance()
-                } else {
-                    iccid.transformationMethod = null
-                }
+                iccid.transformationMethod = if (iccid.transformationMethod == null)
+                    PasswordTransformationMethod.getInstance() else
+                    null
             }
 
             iccid.setOnLongClickListener {
@@ -399,11 +399,9 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
             name.text = profile.displayName
 
             state.setText(
-                if (profile.isEnabled) {
-                    R.string.profile_state_enabled
-                } else {
+                if (profile.isEnabled)
+                    R.string.profile_state_enabled else
                     R.string.profile_state_disabled
-                }
             )
             provider.text = profile.providerName
             profileClassLabel.isVisible = unfilteredProfileListFlow.value
@@ -463,25 +461,15 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
                 }
 
                 R.id.rename -> {
-                    ProfileRenameFragment.newInstance(
-                        slotId,
-                        portId,
-                        seId,
-                        profile.iccid,
-                        profile.displayName
-                    )
+                    ProfileRenameFragment
+                        .newInstance(slotId, portId, seId, profile.iccid, profile.displayName)
                         .show(childFragmentManager, ProfileRenameFragment.TAG)
                     true
                 }
 
                 R.id.delete -> {
-                    ProfileDeleteFragment.newInstance(
-                        slotId,
-                        portId,
-                        seId,
-                        profile.iccid,
-                        profile.displayName
-                    )
+                    ProfileDeleteFragment
+                        .newInstance(slotId, portId, seId, profile.iccid, profile.displayName)
                         .show(childFragmentManager, ProfileDeleteFragment.TAG)
                     true
                 }
@@ -497,8 +485,11 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             when (ViewHolder.Type.fromInt(viewType)) {
                 ViewHolder.Type.PROFILE -> {
-                    val view = LayoutInflater.from(parent.context)
-                        .inflate(R.layout.euicc_profile, parent, false)
+                    val view = LayoutInflater.from(parent.context).inflate(
+                        /* resource = */ R.layout.euicc_profile,
+                        /* root = */ parent,
+                        /* attachToRoot = */ false,
+                    )
                     ProfileViewHolder(view)
                 }
 
@@ -507,37 +498,26 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
                 }
             }
 
-        override fun getItemViewType(position: Int): Int =
-            when {
-                position < profiles.size -> {
-                    ViewHolder.Type.PROFILE.value
-                }
+        override fun getItemViewType(position: Int): Int = when {
+            position < profiles.size -> ViewHolder.Type.PROFILE.value
+            position >= profiles.size && position < profiles.size + footerViews.size -> ViewHolder.Type.FOOTER.value
+            else -> -1
+        }
 
-                position >= profiles.size && position < profiles.size + footerViews.size -> {
-                    ViewHolder.Type.FOOTER.value
-                }
-
-                else -> -1
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) = when (holder) {
+            is ProfileViewHolder -> {
+                holder.setProfile(profiles[position])
+                holder.setEnabledProfile(profiles.enabled)
+                holder.setProfileSequenceNumber(position + 1)
             }
 
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            when (holder) {
-                is ProfileViewHolder -> {
-                    holder.setProfile(profiles[position])
-                    holder.setEnabledProfile(profiles.enabled)
-                    holder.setProfileSequenceNumber(position + 1)
-                }
-
-                is FooterViewHolder -> {
-                    holder.attach(footerViews[position - profiles.size])
-                }
+            is FooterViewHolder -> {
+                holder.attach(footerViews[position - profiles.size])
             }
         }
 
         override fun onViewRecycled(holder: ViewHolder) {
-            if (holder is FooterViewHolder) {
-                holder.detach()
-            }
+            if (holder is FooterViewHolder) holder.detach()
         }
 
         override fun getItemCount(): Int = profiles.size + footerViews.size
