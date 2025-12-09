@@ -1,6 +1,7 @@
 package im.angry.openeuicc.ui.wizard
 
 import android.app.assist.AssistContent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
@@ -23,23 +24,8 @@ import im.angry.openeuicc.util.LPAString
 import im.angry.openeuicc.util.OpenEuiccContextMarker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.typeblog.lpac_jni.LocalProfileAssistant
 
 class DownloadWizardActivity : BaseEuiccAccessActivity() {
-    data class DownloadWizardState(
-        var currentStepFragmentClassName: String?,
-        var selectedSyntheticSlotId: Int,
-        var smdp: String,
-        var matchingId: String?,
-        var confirmationCode: String?,
-        var imei: String?,
-        var downloadStarted: Boolean,
-        var downloadTaskID: Long,
-        var downloadError: LocalProfileAssistant.ProfileDownloadException?,
-        var skipMethodSelect: Boolean,
-        var confirmationCodeRequired: Boolean,
-    )
-
     private lateinit var state: DownloadWizardState
 
     private lateinit var progressBar: ProgressBar
@@ -66,17 +52,8 @@ class DownloadWizardActivity : BaseEuiccAccessActivity() {
         })
 
         state = DownloadWizardState(
-            currentStepFragmentClassName = null,
             selectedSyntheticSlotId = intent.getIntExtra("selectedLogicalSlot", 0),
             smdp = "",
-            matchingId = null,
-            confirmationCode = null,
-            imei = null,
-            downloadStarted = false,
-            downloadTaskID = -1,
-            downloadError = null,
-            skipMethodSelect = false,
-            confirmationCodeRequired = false,
         )
 
         handleDeepLink()
@@ -144,37 +121,20 @@ class DownloadWizardActivity : BaseEuiccAccessActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("currentStepFragmentClassName", state.currentStepFragmentClassName)
-        outState.putInt("selectedLogicalSlot", state.selectedSyntheticSlotId)
-        outState.putString("smdp", state.smdp)
-        outState.putString("matchingId", state.matchingId)
-        outState.putString("confirmationCode", state.confirmationCode)
-        outState.putString("imei", state.imei)
-        outState.putBoolean("downloadStarted", state.downloadStarted)
-        outState.putLong("downloadTaskID", state.downloadTaskID)
-        outState.putBoolean("confirmationCodeRequired", state.confirmationCodeRequired)
+        outState.putParcelable(DownloadWizardState::class.simpleName, state)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        state.currentStepFragmentClassName = savedInstanceState.getString(
-            "currentStepFragmentClassName",
-            state.currentStepFragmentClassName
-        )
-        state.selectedSyntheticSlotId =
-            savedInstanceState.getInt("selectedSyntheticSlotId", state.selectedSyntheticSlotId)
-        state.smdp = savedInstanceState.getString("smdp", state.smdp)
-        state.matchingId = savedInstanceState.getString("matchingId", state.matchingId)
-        state.imei = savedInstanceState.getString("imei", state.imei)
-        state.downloadStarted =
-            savedInstanceState.getBoolean("downloadStarted", state.downloadStarted)
-        state.downloadTaskID = savedInstanceState.getLong("downloadTaskID", state.downloadTaskID)
-        state.confirmationCode =
-            savedInstanceState.getString("confirmationCode", state.confirmationCode)
-        state.confirmationCodeRequired = savedInstanceState.getBoolean(
-            "confirmationCodeRequired",
-            state.confirmationCodeRequired
-        )
+        val clazz = DownloadWizardState::class.java
+        state = with(savedInstanceState) {
+            @Suppress("DEPRECATION")
+            val state = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                getParcelable(clazz.simpleName, clazz) else
+                getParcelable(clazz.simpleName)
+            check(state is DownloadWizardState) { "DownloadedWizardState is not of correct type" }
+            state
+        }
     }
 
     private fun onPrevPressed() {
