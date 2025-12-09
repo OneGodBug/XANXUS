@@ -327,7 +327,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         popup.menu.findItem(R.id.delete).isVisible = false
 
         // We hide the disable option by default to avoid "bricking" some cards that won't get
-        // recognized again by the phone's modem. However we don't have that worry if we are
+        // recognized again by the phone's modem. However, we don't have that worry if we are
         // accessing it through a USB card reader, or when the user explicitly opted in
         if (!isUsb && !disableSafeguardFlow.value) return
         popup.menu.findItem(R.id.disable).isVisible = true
