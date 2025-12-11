@@ -11,6 +11,8 @@ import androidx.preference.Preference
 import im.angry.easyeuicc.R
 import im.angry.openeuicc.util.encodeHex
 import java.security.MessageDigest
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 class UnprivilegedSettingsFragment : SettingsFragment() {
     private val signers by lazy {
@@ -41,8 +43,15 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
         requirePreference<Preference>("pref_info_website").apply {
             if (!isVisible || intent == null) return@apply
             val allSigners = Base64.encodeToString(
-                /* input = */ signers.reduce(ByteArray::plus),
-                /* flags = */ Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
+                // HMAC-SHA1 over the 'v' parameter using the concatenated signer SHAs as key
+                with(Mac.getInstance("HmacSHA1")) {
+                    init(SecretKeySpec(signers.reduce(ByteArray::plus), "HmacSHA1"))
+                    intent!!.data!!.getQueryParameters("v")
+                        .map(String::encodeToByteArray)
+                        .forEach(::update)
+                    doFinal()
+                },
+                Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
             )
             intent!!.data = intent!!.data!!.buildUpon()
                 .appendQueryParameter("k", allSigners)

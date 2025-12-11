@@ -13,11 +13,13 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
+import im.angry.openeuicc.common.BuildConfig
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.util.OpenEuiccContextMarker
 import im.angry.openeuicc.util.PreferenceFlowWrapper
 import im.angry.openeuicc.util.mainViewPaddingInsetHandler
 import im.angry.openeuicc.util.selfAppVersion
+import im.angry.openeuicc.util.selfAppVersionCode
 import im.angry.openeuicc.util.setupRootViewSystemBarInsets
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -95,12 +97,17 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
 
         requirePreference<Preference>("pref_info_website").apply {
             val uri = appContainer.customizableTextProvider.websiteUri?.toUri() ?: return@apply
+            val versions = arrayOf(
+                requireContext().selfAppVersion,
+                requireContext().selfAppVersionCode.toString(36),
+                BuildConfig.BUILD_TYPE,
+            )
             isVisible = true
             summary = uri.toString()
             intent = Intent(
                 /* action = */ Intent.ACTION_VIEW,
                 uri.buildUpon()
-                    .appendQueryParameter("v", requireContext().selfAppVersion)
+                    .appendQueryParameter("v", versions.joinToString("\u0000"))
                     .build()
             )
         }
