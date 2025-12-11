@@ -15,6 +15,11 @@ interface CustomizableTextProvider {
     val profileSwitchingTimeoutMessage: String
 
     /**
+     * Display the website link in settings; null if not available.
+     */
+    val websiteUri: String?
+
+    /**
      * Format the name of a logical slot -- not for USB channels
      */
     fun formatNonUsbChannelName(logicalSlotId: Int): String

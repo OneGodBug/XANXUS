@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import android.widget.Toast
 import androidx.preference.Preference
 import im.angry.easyeuicc.R
@@ -12,18 +13,12 @@ import im.angry.openeuicc.util.encodeHex
 import java.security.MessageDigest
 
 class UnprivilegedSettingsFragment : SettingsFragment() {
-    private val firstSigner by lazy {
-        val packageInfo = requireContext().let {
-            it.packageManager.getPackageInfo(
-                it.packageName,
-                PackageManager.GET_SIGNING_CERTIFICATES,
-            )
+    private val signers by lazy {
+        val packageInfo = with(requireContext()) {
+            packageManager.getPackageInfo(packageName, /* flags = */ PackageManager.GET_SIGNING_CERTIFICATES)
         }
-        packageInfo.signingInfo!!.apkContentsSigners.first().let {
-            MessageDigest.getInstance("SHA-1")
-                .apply { update(it.toByteArray()) }
-                .digest()
-        }
+        packageInfo.signingInfo!!.apkContentsSigners
+            .map { MessageDigest.getInstance("SHA-1").digest(it.toByteArray()) }
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -32,7 +27,7 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
         mergePreferenceOverlay("pref_info_overlay", "pref_info")
 
         requirePreference<Preference>("pref_info_ara_m").apply {
-            summary = firstSigner.encodeHex()
+            summary = signers.first().encodeHex()
             setOnPreferenceClickListener {
                 requireContext().getSystemService(ClipboardManager::class.java)!!
                     .setPrimaryClip(ClipData.newPlainText("ara-m", summary))
@@ -41,6 +36,17 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
                     .show()
                 true
             }
+        }
+
+        requirePreference<Preference>("pref_info_website").apply {
+            if (!isVisible || intent == null) return@apply
+            val allSigners = Base64.encodeToString(
+                /* input = */ signers.reduce(ByteArray::plus),
+                /* flags = */ Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
+            )
+            intent!!.data = intent!!.data!!.buildUpon()
+                .appendQueryParameter("k", allSigners)
+                .build()
         }
     }
 }

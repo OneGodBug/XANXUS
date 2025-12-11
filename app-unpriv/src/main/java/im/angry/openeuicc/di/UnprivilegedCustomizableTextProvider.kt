@@ -4,8 +4,10 @@ import android.content.Context
 import im.angry.easyeuicc.R
 import im.angry.openeuicc.core.EuiccChannel
 
-class UnprivilegedCustomizableTextProvider(private val context: Context) :
-    DefaultCustomizableTextProvider(context) {
+class UnprivilegedCustomizableTextProvider(private val context: Context) : DefaultCustomizableTextProvider(context) {
+    override val websiteUri: String
+        get() = context.getString(R.string.pref_info_website_url)
+
     override fun formatNonUsbChannelName(logicalSlotId: Int): String =
         context.getString(R.string.channel_name_format_unpriv, logicalSlotId)
 
