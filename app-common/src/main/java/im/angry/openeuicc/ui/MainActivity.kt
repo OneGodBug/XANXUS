@@ -164,28 +164,20 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
             euiccChannelManager.flowEuiccSecureElements(slotId, portId).onEach { seId ->
                 euiccChannelManager.withEuiccChannel(slotId, portId, seId) { channel ->
-                    if (preferenceRepository.verboseLoggingFlow.first()) {
+                    if (preferenceRepository.verboseLoggingFlow.first())
                         Log.d(TAG, channel.lpa.eID)
-                    }
                     // Request the system to refresh the list of profiles every time we start
                     // Note that this is currently supposed to be no-op when unprivileged,
                     // but it could change in the future
                     euiccChannelManager.notifyEuiccProfilesChanged(channel.logicalSlotId)
 
-                    val channelName = if (channel.hasMultipleSE) {
-                        appContainer.customizableTextProvider.formatNonUsbChannelNameWithSeId(
-                            channel.logicalSlotId,
-                            channel.seId
-                        )
-                    } else {
-                        appContainer.customizableTextProvider.formatNonUsbChannelName(channel.logicalSlotId)
+                    val channelName = with(appContainer.customizableTextProvider) {
+                        if (channel.hasMultipleSE)
+                            formatNonUsbChannelNameWithSeId(channel.logicalSlotId, channel.seId) else
+                            formatNonUsbChannelName(channel.logicalSlotId)
                     }
                     newPages.add(Page(channel.logicalSlotId, channelName) {
-                        appContainer.uiComponentFactory.createEuiccManagementFragment(
-                            slotId,
-                            portId,
-                            seId
-                        )
+                        appContainer.uiComponentFactory.createEuiccManagementFragment(slotId, portId, seId)
                     })
                 }
             }.collect()

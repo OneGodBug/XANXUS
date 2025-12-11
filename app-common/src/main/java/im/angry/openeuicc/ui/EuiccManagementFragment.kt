@@ -76,6 +76,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
     private var logicalSlotId: Int = -1
     private lateinit var eid: String
     private var enabledProfile: LocalProfileInfo? = null
+    private var hasMultipleSE: Boolean = false
 
     private val adapter = EuiccProfileAdapter()
 
@@ -166,6 +167,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
             Intent(requireContext(), NotificationsActivity::class.java).apply {
                 putExtra("logicalSlotId", logicalSlotId)
                 putExtra("seId", seId)
+                putExtra("hasMultipleSE", hasMultipleSE)
                 startActivity(this)
             }
             true
@@ -175,6 +177,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
             Intent(requireContext(), EuiccInfoActivity::class.java).apply {
                 putExtra("logicalSlotId", logicalSlotId)
                 putExtra("seId", seId)
+                putExtra("hasMultipleSE", hasMultipleSE)
                 startActivity(this)
             }
             true
@@ -227,6 +230,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
             logicalSlotId = channel.logicalSlotId
             eid = channel.lpa.eID
             enabledProfile = channel.lpa.profiles.enabled
+            hasMultipleSE = channel.hasMultipleSE
             euiccChannelManager.notifyEuiccProfilesChanged(channel.logicalSlotId)
             if (unfilteredProfileListFlow.value)
                 channel.lpa.profiles

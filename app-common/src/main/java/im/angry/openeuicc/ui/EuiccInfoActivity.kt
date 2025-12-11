@@ -85,7 +85,11 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         val channelTitle = if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
             getString(R.string.channel_type_usb)
         } else {
-            appContainer.customizableTextProvider.formatNonUsbChannelName(logicalSlotId)
+            with(appContainer.customizableTextProvider) {
+                if (intent.getBooleanExtra("hasMultipleSE", false))
+                    formatNonUsbChannelNameWithSeId(logicalSlotId, seId) else
+                    formatNonUsbChannelName(logicalSlotId)
+            }
         }
 
         title = getString(R.string.euicc_info_activity_title, channelTitle)
