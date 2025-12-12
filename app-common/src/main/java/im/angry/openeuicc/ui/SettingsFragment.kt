@@ -6,20 +6,17 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
-import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.CheckBoxPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
-import im.angry.openeuicc.common.BuildConfig
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.util.OpenEuiccContextMarker
 import im.angry.openeuicc.util.PreferenceFlowWrapper
 import im.angry.openeuicc.util.mainViewPaddingInsetHandler
 import im.angry.openeuicc.util.selfAppVersion
-import im.angry.openeuicc.util.selfAppVersionCode
 import im.angry.openeuicc.util.setupRootViewSystemBarInsets
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -96,10 +93,10 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         }
 
         requirePreference<Preference>("pref_info_website").apply {
-            val uri = appContainer.customizableTextProvider.websiteUri?.toUri() ?: return@apply
+            val uri = appContainer.customizableTextProvider.websiteUri ?: return@apply
             isVisible = true
-            summary = uri.toString()
-            intent = Intent(/* action = */ Intent.ACTION_VIEW, uri.let(::modifyWebsiteUri))
+            summary = uri.buildUpon().clearQuery().build().toString()
+            intent = Intent(/* action = */ Intent.ACTION_VIEW, uri)
         }
     }
 
@@ -179,16 +176,5 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         }
 
         overlayCat.parent?.removePreference(overlayCat)
-    }
-
-    protected open fun modifyWebsiteUri(uri: Uri): Uri {
-        val versions = arrayOf(
-            requireContext().selfAppVersion,
-            requireContext().selfAppVersionCode.toString(36),
-            BuildConfig.BUILD_TYPE,
-        )
-        return uri.buildUpon()
-            .appendQueryParameter("v", versions.joinToString("\u0000"))
-            .build()
     }
 }

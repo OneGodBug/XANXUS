@@ -2,26 +2,22 @@ package im.angry.openeuicc.ui
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.pm.PackageManager
-import android.net.Uri
+import android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
 import android.os.Build
 import android.os.Bundle
-import android.util.Base64
 import android.widget.Toast
 import androidx.preference.Preference
 import im.angry.easyeuicc.R
 import im.angry.openeuicc.util.encodeHex
 import java.security.MessageDigest
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
 
 class UnprivilegedSettingsFragment : SettingsFragment() {
-    private val signers by lazy {
+    private val firstSigner by lazy {
         val packageInfo = with(requireContext()) {
-            packageManager.getPackageInfo(packageName, /* flags = */ PackageManager.GET_SIGNING_CERTIFICATES)
+            packageManager.getPackageInfo(packageName, /* flags = */ GET_SIGNING_CERTIFICATES)
         }
-        packageInfo.signingInfo!!.apkContentsSigners
-            .map { MessageDigest.getInstance("SHA-1").digest(it.toByteArray()) }
+        packageInfo.signingInfo!!.apkContentsSigners.first().toByteArray()
+            .let(MessageDigest.getInstance("SHA-1")::digest)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -30,7 +26,7 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
         mergePreferenceOverlay("pref_info_overlay", "pref_info")
 
         requirePreference<Preference>("pref_info_ara_m").apply {
-            summary = signers.first().encodeHex()
+            summary = firstSigner.encodeHex()
             setOnPreferenceClickListener {
                 requireContext().getSystemService(ClipboardManager::class.java)!!
                     .setPrimaryClip(ClipData.newPlainText("ara-m", summary))
@@ -40,20 +36,5 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
                 true
             }
         }
-    }
-
-    override fun modifyWebsiteUri(uri: Uri): Uri {
-        val uri = super.modifyWebsiteUri(uri)
-        val allSigners = Base64.encodeToString(
-            // HMAC-SHA1 over the 'v' parameter using the concatenated signer SHAs as key
-            with(Mac.getInstance("HmacSHA1")) {
-                init(SecretKeySpec(signers.reduce(ByteArray::plus), "HmacSHA1"))
-                doFinal(uri.getQueryParameter("v")!!.encodeToByteArray())
-            },
-            Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
-        )
-        return uri.buildUpon()
-            .appendQueryParameter("v", allSigners)
-            .build()
     }
 }
