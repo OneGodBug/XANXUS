@@ -3,6 +3,7 @@ package im.angry.openeuicc.ui
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Base64
@@ -39,23 +40,20 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
                 true
             }
         }
+    }
 
-        requirePreference<Preference>("pref_info_website").apply {
-            if (!isVisible || intent == null) return@apply
-            val allSigners = Base64.encodeToString(
-                // HMAC-SHA1 over the 'v' parameter using the concatenated signer SHAs as key
-                with(Mac.getInstance("HmacSHA1")) {
-                    init(SecretKeySpec(signers.reduce(ByteArray::plus), "HmacSHA1"))
-                    intent!!.data!!.getQueryParameters("v")
-                        .map(String::encodeToByteArray)
-                        .forEach(::update)
-                    doFinal()
-                },
-                Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
-            )
-            intent!!.data = intent!!.data!!.buildUpon()
-                .appendQueryParameter("k", allSigners)
-                .build()
-        }
+    override fun modifyWebsiteUri(uri: Uri): Uri {
+        val uri = super.modifyWebsiteUri(uri)
+        val allSigners = Base64.encodeToString(
+            // HMAC-SHA1 over the 'v' parameter using the concatenated signer SHAs as key
+            with(Mac.getInstance("HmacSHA1")) {
+                init(SecretKeySpec(signers.reduce(ByteArray::plus), "HmacSHA1"))
+                doFinal(uri.getQueryParameter("v")!!.encodeToByteArray())
+            },
+            Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
+        )
+        return uri.buildUpon()
+            .appendQueryParameter("k", allSigners)
+            .build()
     }
 }

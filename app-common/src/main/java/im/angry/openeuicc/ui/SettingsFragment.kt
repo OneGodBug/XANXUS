@@ -97,19 +97,9 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
 
         requirePreference<Preference>("pref_info_website").apply {
             val uri = appContainer.customizableTextProvider.websiteUri?.toUri() ?: return@apply
-            val versions = arrayOf(
-                requireContext().selfAppVersion,
-                requireContext().selfAppVersionCode.toString(36),
-                BuildConfig.BUILD_TYPE,
-            )
             isVisible = true
             summary = uri.toString()
-            intent = Intent(
-                /* action = */ Intent.ACTION_VIEW,
-                uri.buildUpon()
-                    .appendQueryParameter("v", versions.joinToString("\u0000"))
-                    .build()
-            )
+            intent = Intent(/* action = */ Intent.ACTION_VIEW, uri.let(::modifyWebsiteUri))
         }
     }
 
@@ -189,5 +179,16 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         }
 
         overlayCat.parent?.removePreference(overlayCat)
+    }
+
+    protected open fun modifyWebsiteUri(uri: Uri): Uri {
+        val versions = arrayOf(
+            requireContext().selfAppVersion,
+            requireContext().selfAppVersionCode.toString(36),
+            BuildConfig.BUILD_TYPE,
+        )
+        return uri.buildUpon()
+            .appendQueryParameter("v", versions.joinToString("\u0000"))
+            .build()
     }
 }
