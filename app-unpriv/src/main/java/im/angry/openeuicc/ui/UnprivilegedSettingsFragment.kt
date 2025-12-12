@@ -53,7 +53,7 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
             Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
         )
         return uri.buildUpon()
-            .appendQueryParameter("k", allSigners)
+            .appendQueryParameter("v", allSigners)
             .build()
     }
 }
