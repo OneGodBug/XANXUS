@@ -10,7 +10,6 @@ import im.angry.openeuicc.common.BuildConfig
 import im.angry.openeuicc.core.EuiccChannel
 import im.angry.openeuicc.util.selfAppVersion
 import im.angry.openeuicc.util.selfAppVersionCode
-import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
@@ -23,24 +22,22 @@ class UnprivilegedCustomizableTextProvider(private val context: Context) : Defau
                 BuildConfig.BUILD_TYPE, // update channels
             )
             val message = parts.joinToString("\u0000")
-            val allSigners = Base64.encodeToString(
-                // HMAC-SHA1 over the 'v' parameter using the concatenated signer SHAs as key
-                with(Mac.getInstance("HmacSHA1")) {
-                    // Concatenate SHA-1 of all signers
-                    val key = with(context) {
-                        packageManager.getPackageInfo(packageName, /* flags = */ GET_SIGNING_CERTIFICATES)
-                            .signingInfo!!.apkContentsSigners
-                            .map { MessageDigest.getInstance("SHA-1").digest(it.toByteArray()) }
-                            .reduce(ByteArray::plus)
+            val signed = Base64.encodeToString(
+                // HMAC-SHA256 over the message with app signing certs as key
+                with(Mac.getInstance("HmacSHA256")) {
+                    // Concatenate all signing certs bytes to form the key
+                    val signingInfo = with(context) {
+                        packageManager.getPackageInfo(packageName, /* flags = */ GET_SIGNING_CERTIFICATES).signingInfo!!
                     }
-                    init(SecretKeySpec(key, "HmacSHA1"))
+                    val key = signingInfo.apkContentsSigners.map { it.toByteArray() }.reduce { a, b -> a + b }
+                    init(SecretKeySpec(key, algorithm))
                     doFinal(message.encodeToByteArray())
                 },
                 Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
             )
             return context.getString(R.string.pref_info_website_url).toUri().buildUpon()
                 .appendQueryParameter("v", message)
-                .appendQueryParameter("v", allSigners)
+                .appendQueryParameter("v", signed)
                 .build()
         }
 
