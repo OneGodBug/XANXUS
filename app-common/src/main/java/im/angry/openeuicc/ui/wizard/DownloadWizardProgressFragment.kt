@@ -18,7 +18,7 @@ import im.angry.openeuicc.util.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import net.typeblog.lpac_jni.ActivationCode
+import net.typeblog.lpac_jni.ProfileDownloadInput
 import net.typeblog.lpac_jni.ProfileDownloadState
 import net.typeblog.lpac_jni.LocalProfileAssistant
 
@@ -168,7 +168,7 @@ class DownloadWizardProgressFragment : DownloadWizardActivity.DownloadWizardStep
 
             val ret = euiccChannelManagerService.launchProfileDownloadTask(
                 slotId, portId, seId,
-                ActivationCode(state.smdp, state.matchingId, state.imei, state.confirmationCode)
+                ProfileDownloadInput(state.smdp, state.matchingId, state.imei, state.confirmationCode)
             )
 
             state.downloadTaskID = ret.taskId

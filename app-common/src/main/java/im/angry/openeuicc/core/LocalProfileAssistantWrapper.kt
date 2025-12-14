@@ -1,6 +1,6 @@
 package im.angry.openeuicc.core
 
-import net.typeblog.lpac_jni.ActivationCode
+import net.typeblog.lpac_jni.ProfileDownloadInput
 import net.typeblog.lpac_jni.EuiccInfo2
 import net.typeblog.lpac_jni.LocalProfileAssistant
 import net.typeblog.lpac_jni.LocalProfileInfo
@@ -41,8 +41,8 @@ class LocalProfileAssistantWrapper(orig: LocalProfileAssistant) :
 
     override fun deleteProfile(iccid: String): Boolean = lpa.deleteProfile(iccid)
 
-    override fun downloadProfile(activationCode: ActivationCode, callback: ProfileDownloadCallback) =
-        lpa.downloadProfile(activationCode, callback)
+    override fun downloadProfile(input: ProfileDownloadInput, callback: ProfileDownloadCallback) =
+        lpa.downloadProfile(input, callback)
 
     override fun deleteNotification(seqNumber: Long): Boolean = lpa.deleteNotification(seqNumber)
 

@@ -37,7 +37,7 @@ interface LocalProfileAssistant {
     fun disableProfile(iccid: String, refresh: Boolean = true): Boolean
     fun deleteProfile(iccid: String): Boolean
 
-    fun downloadProfile(activationCode: ActivationCode, callback: ProfileDownloadCallback)
+    fun downloadProfile(input: ProfileDownloadInput, callback: ProfileDownloadCallback)
 
     fun deleteNotification(seqNumber: Long): Boolean
     fun handleNotification(seqNumber: Long): Boolean

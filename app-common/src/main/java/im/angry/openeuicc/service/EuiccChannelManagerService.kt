@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.yield
-import net.typeblog.lpac_jni.ActivationCode
+import net.typeblog.lpac_jni.ProfileDownloadInput
 
 /**
  * An Android Service wrapper for EuiccChannelManager.
@@ -380,7 +380,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
 
     fun launchProfileDownloadTask(
         slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId,
-        activationCode: ActivationCode
+        input: ProfileDownloadInput
     ): ForegroundTaskSubscriberFlow =
         launchForegroundTask(
             getString(R.string.task_profile_download),
@@ -389,7 +389,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
         ) {
             euiccChannelManager.beginTrackedOperation(slotId, portId, seId) {
                 euiccChannelManager.withEuiccChannel(slotId, portId, seId) { channel ->
-                    channel.lpa.downloadProfile(activationCode) { state ->
+                    channel.lpa.downloadProfile(input) { state ->
                         if (state.progress == 0) return@downloadProfile
                         foregroundTaskState.value = ForegroundTaskState.InProgress(state.progress)
                     }
