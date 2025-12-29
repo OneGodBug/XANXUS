@@ -74,13 +74,11 @@ class NotificationsActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker 
 
         // This is slightly different from the MainActivity logic
         // due to the length (we don't want to display the full USB product name)
-        val channelTitle = if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
+        title = if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
             getString(R.string.channel_type_usb)
         } else {
             appContainer.customizableTextProvider.formatNonUsbChannelName(logicalSlotId)
         }
-
-        title = getString(R.string.profile_notifications_detailed_format, channelTitle)
 
         swipeRefresh.setOnRefreshListener {
             refresh()
@@ -115,6 +113,9 @@ class NotificationsActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker 
 
             else -> super.onOptionsItemSelected(item)
         }
+
+    override fun setTitle(title: CharSequence) =
+        super.setTitle(getString(R.string.profile_notifications_detailed_format, title))
 
     private fun launchTask(task: suspend () -> Unit) {
         swipeRefresh.isRefreshing = true
