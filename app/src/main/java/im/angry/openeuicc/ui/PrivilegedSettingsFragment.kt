@@ -1,5 +1,6 @@
 package im.angry.openeuicc.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
@@ -23,5 +24,16 @@ class PrivilegedSettingsFragment : SettingsFragment(), PrivilegedEuiccContextMar
         // Force use TelephonyManager API
         requirePreference<CheckBoxPreference>("pref_developer_removable_telephony_manager")
             .bindBooleanFlow(preferenceRepository.removableTelephonyManagerFlow)
+
+        requirePreference<Preference>("pref_developer_telephony_provider_fixer").apply {
+            val fixer = TelephonyProviderFixer(requireContext())
+
+            isVisible = fixer.isPermissionGranted()
+
+            setOnPreferenceClickListener {
+                fixer.perform()
+                true
+            }
+        }
     }
 }

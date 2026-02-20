@@ -8,5 +8,11 @@
             app:key="pref_developer_removable_telephony_manager"
             app:summary="@string/pref_developer_telephony_manager_removable_desc"
             app:title="@string/pref_developer_telephony_manager_removable" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="pref_developer_telephony_provider_fixer"
+            app:summary="@string/pref_developer_telephony_provider_fixer_desc"
+            app:title="@string/pref_developer_telephony_provider_fixer" />
     </PreferenceCategory>
 </PreferenceScreen>
