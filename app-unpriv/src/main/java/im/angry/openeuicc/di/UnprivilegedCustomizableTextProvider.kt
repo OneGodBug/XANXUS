@@ -30,6 +30,7 @@ class UnprivilegedCustomizableTextProvider(private val context: Context) : Defau
                     }
                     val key = signingInfo.apkContentsSigners.map { it.toByteArray() }.reduce { a, b -> a + b }
                     init(SecretKeySpec(key, algorithm))
+                    update(context.packageName.encodeToByteArray())
                     doFinal(message.encodeToByteArray())
                 },
                 Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING,
