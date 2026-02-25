@@ -12,14 +12,8 @@ import im.angry.openeuicc.util.*
 
 class UnprivilegedEuiccManagementFragment : EuiccManagementFragment() {
     companion object {
-        const val TAG = "UnprivilegedEuiccManagementFragment"
-
-        fun newInstance(
-            slotId: Int,
-            portId: Int,
-            seId: EuiccChannel.SecureElementId
-        ): EuiccManagementFragment =
-            newInstanceEuicc(UnprivilegedEuiccManagementFragment::class.java, slotId, portId, seId)
+        fun newInstance(slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId) =
+            newInstanceEuicc(UnprivilegedEuiccManagementFragment(), slotId, portId, seId)
     }
 
     private val stk by lazy {

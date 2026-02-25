@@ -41,17 +41,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileInfo
 
-open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
-    EuiccChannelFragmentMarker {
+open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener, EuiccChannelFragmentMarker {
     companion object {
         const val TAG = "EuiccManagementFragment"
 
-        fun newInstance(
-            slotId: Int,
-            portId: Int,
-            seId: EuiccChannel.SecureElementId
-        ): EuiccManagementFragment =
-            newInstanceEuicc(EuiccManagementFragment::class.java, slotId, portId, seId)
+        fun newInstance(slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId) =
+            newInstanceEuicc(EuiccManagementFragment(), slotId, portId, seId)
     }
 
     private lateinit var swipeRefresh: SwipeRefreshLayout

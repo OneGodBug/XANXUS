@@ -25,12 +25,10 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
 
         const val TAG = "ProfileRenameFragment"
 
-        fun newInstance(
-            slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId,
-            iccid: String, currentName: String
-        ) = newInstanceEuicc(ProfileRenameFragment::class.java, slotId, portId, seId) {
-            putString(FIELD_ICCID, iccid)
-            putString(FIELD_CURRENT_NAME, currentName)
+        fun newInstance(slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId, iccid: String, name: String) =
+            newInstanceEuicc(ProfileRenameFragment(), slotId, portId, seId) {
+                putString(FIELD_ICCID, iccid)
+                putString(FIELD_CURRENT_NAME, name)
         }
     }
 

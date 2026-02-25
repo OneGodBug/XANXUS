@@ -23,7 +23,7 @@ class EuiccMemoryResetFragment : DialogFragment(), EuiccChannelFragmentMarker {
         private const val FIELD_EID = "eid"
 
         fun newInstance(slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId, eid: String) =
-            newInstanceEuicc(EuiccMemoryResetFragment::class.java, slotId, portId, seId) {
+            newInstanceEuicc(EuiccMemoryResetFragment(), slotId, portId, seId) {
                 putString(FIELD_EID, eid)
             }
     }

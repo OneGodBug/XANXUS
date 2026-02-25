@@ -11,12 +11,8 @@ import net.typeblog.lpac_jni.LocalProfileInfo
 
 class PrivilegedEuiccManagementFragment : EuiccManagementFragment() {
     companion object {
-        fun newInstance(
-            slotId: Int,
-            portId: Int,
-            seId: EuiccChannel.SecureElementId
-        ): EuiccManagementFragment =
-            newInstanceEuicc(PrivilegedEuiccManagementFragment::class.java, slotId, portId, seId)
+        fun newInstance(slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId) =
+            newInstanceEuicc(PrivilegedEuiccManagementFragment(), slotId, portId, seId)
     }
 
     private var isMEP = false

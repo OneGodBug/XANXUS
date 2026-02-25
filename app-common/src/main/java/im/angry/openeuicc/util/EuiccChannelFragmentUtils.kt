@@ -2,6 +2,7 @@ package im.angry.openeuicc.util
 
 import android.os.Build
 import android.os.Bundle
+import androidx.core.util.Supplier
 import androidx.fragment.app.Fragment
 import im.angry.openeuicc.core.EuiccChannel
 import im.angry.openeuicc.core.EuiccChannelManager
@@ -20,20 +21,16 @@ private typealias BundleSetter = Bundle.() -> Unit
 // in the definition of an interface, so the only way is to limit where the extension functions
 // can be applied.
 fun <T> newInstanceEuicc(
-    clazz: Class<T>,
-    slotId: Int,
-    portId: Int,
-    seId: EuiccChannel.SecureElementId,
-    addArguments: BundleSetter = {}
-): T
-    where T : Fragment, T : EuiccChannelFragmentMarker =
-    clazz.getDeclaredConstructor().newInstance().apply {
-        arguments = Bundle()
-        arguments!!.putInt(FIELD_SLOT_ID, slotId)
-        arguments!!.putInt(FIELD_PORT_ID, portId)
-        arguments!!.putParcelable(FIELD_SE_ID, seId)
-        arguments!!.addArguments()
-    }
+    fragment: T,
+    slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId,
+    addArguments: BundleSetter? = null
+): T where T : Fragment, T : EuiccChannelFragmentMarker = fragment.apply {
+    arguments = Bundle()
+    arguments!!.putInt(FIELD_SLOT_ID, slotId)
+    arguments!!.putInt(FIELD_PORT_ID, portId)
+    arguments!!.putParcelable(FIELD_SE_ID, seId)
+    if (addArguments != null) arguments!!.addArguments()
+}
 
 // Convenient methods to avoid using `channel` for these
 // `channel` requires that the channel actually exists in EuiccChannelManager, which is
