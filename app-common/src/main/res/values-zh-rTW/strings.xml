@@ -7,6 +7,7 @@
     <string name="profile_reload_slots">重新載入卡槽</string>
     <string name="profile_no_enabled_profile">未知</string>
     <string name="channel_name_format">虛擬卡槽 %d</string>
+    <string name="ssl_certificate">SSL 憑證</string>
     <string name="profile_state_enabled">已啟用</string>
     <string name="profile_state_disabled">已停用</string>
     <string name="profile_provider">電信業者:</string>

@@ -13,6 +13,9 @@
     <string name="channel_type_usb" translatable="false">USB</string>
     <string name="channel_type_omapi" translatable="false">OpenMobile API (OMAPI)</string>
 
+    <!-- Network -->
+    <string name="ssl_certificate">SSL Certificate</string>
+
     <!-- Profile -->
     <string name="profile_state_enabled">Enabled</string>
     <string name="profile_state_disabled">Disabled</string>

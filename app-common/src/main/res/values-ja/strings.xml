@@ -7,6 +7,7 @@
     <string name="profile_no_enabled_profile">不明</string>
     <string name="channel_name_format">論理スロット %d</string>
     <!-- Profile -->
+    <string name="ssl_certificate">SSL 証明書</string>
     <string name="profile_state_enabled">有効化済み</string>
     <string name="profile_state_disabled">無効化済み</string>
     <string name="profile_provider">プロバイダー:</string>
