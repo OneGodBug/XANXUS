@@ -74,11 +74,11 @@ class NotificationsActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker 
 
         // This is slightly different from the MainActivity logic
         // due to the length (we don't want to display the full USB product name)
-        title = if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
-            getString(R.string.channel_type_usb)
-        } else {
-            appContainer.customizableTextProvider.formatNonUsbChannelName(logicalSlotId)
-        }
+        setChannelTitle(
+            if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID)
+                getString(R.string.channel_type_usb) else
+                appContainer.customizableTextProvider.formatNonUsbChannelName(logicalSlotId)
+        )
 
         swipeRefresh.setOnRefreshListener {
             refresh()
@@ -114,8 +114,9 @@ class NotificationsActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker 
             else -> super.onOptionsItemSelected(item)
         }
 
-    override fun setTitle(title: CharSequence) =
+    private fun setChannelTitle(title: CharSequence) {
         super.setTitle(getString(R.string.profile_notifications_detailed_format, title))
+    }
 
     private fun launchTask(task: suspend () -> Unit) {
         swipeRefresh.isRefreshing = true
@@ -136,8 +137,9 @@ class NotificationsActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker 
             notificationAdapter.notifications = withEuiccChannel { channel ->
                 if (channel.hasMultipleSE && logicalSlotId != EuiccChannelManager.USB_CHANNEL_ID) {
                     withContext(Dispatchers.Main) {
-                        title =
-                            appContainer.customizableTextProvider.formatNonUsbChannelNameWithSeId(logicalSlotId, seId)
+                        val channelTitle = appContainer.customizableTextProvider
+                            .formatNonUsbChannelNameWithSeId(logicalSlotId, seId)
+                        setChannelTitle(channelTitle)
                     }
                 }
 

@@ -76,11 +76,11 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             intent.getParcelableExtra("seId")
         } ?: EuiccChannel.SecureElementId.DEFAULT
 
-        title = if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
-            getString(R.string.channel_type_usb)
-        } else {
-            appContainer.customizableTextProvider.formatNonUsbChannelName(logicalSlotId)
-        }
+        setChannelTitle(
+            if (logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID)
+                getString(R.string.channel_type_usb) else
+                appContainer.customizableTextProvider.formatNonUsbChannelName(logicalSlotId)
+        )
 
         swipeRefresh.setOnRefreshListener { refresh() }
 
@@ -101,8 +101,9 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         else -> super.onOptionsItemSelected(item)
     }
 
-    override fun setTitle(title: CharSequence) =
+    private fun setChannelTitle(title: CharSequence) {
         super.setTitle(getString(R.string.euicc_info_activity_title, title))
+    }
 
     override fun onInit() {
         refresh()
@@ -118,8 +119,9 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
                 // TODO: Move channel formatting to somewhere centralized and remove this hack. (And also, of course, add support for USB)
                 if (channel.hasMultipleSE && logicalSlotId != EuiccChannelManager.USB_CHANNEL_ID) {
                     withContext(Dispatchers.Main) {
-                        title =
-                            appContainer.customizableTextProvider.formatNonUsbChannelNameWithSeId(logicalSlotId, seId)
+                        val title = appContainer.customizableTextProvider
+                            .formatNonUsbChannelNameWithSeId(logicalSlotId, seId)
+                        setChannelTitle(title)
                     }
                 }
 
