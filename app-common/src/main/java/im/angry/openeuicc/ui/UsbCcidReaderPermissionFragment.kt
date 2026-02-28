@@ -142,11 +142,10 @@ class UsbCcidReaderPermissionFragment : Fragment(), OpenEuiccContextMarker {
             euiccChannelManager.tryOpenUsbEuiccChannel()
         }
 
-        loadingProgress.visibility = View.GONE
-
         usbDevice = device
 
         if (device != null && !canOpen && !usbManager.hasPermission(device)) {
+            loadingProgress.visibility = View.GONE
             text.text = getString(R.string.usb_permission_needed)
             text.visibility = View.VISIBLE
             permissionButton.visibility = View.VISIBLE
@@ -154,6 +153,7 @@ class UsbCcidReaderPermissionFragment : Fragment(), OpenEuiccContextMarker {
             val seIds = euiccChannelManager.flowEuiccSecureElements(EuiccChannelManager.USB_CHANNEL_ID, 0).toList()
             (requireActivity() as MainActivity).instantiateUsbTabs(seIds)
         } else {
+            loadingProgress.visibility = View.GONE
             text.text = getString(R.string.usb_failed)
             text.visibility = View.VISIBLE
             permissionButton.visibility = View.GONE
