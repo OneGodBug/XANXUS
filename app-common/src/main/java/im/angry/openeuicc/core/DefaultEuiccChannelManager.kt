@@ -379,8 +379,7 @@ open class DefaultEuiccChannelManager(
                     UsbCcidContext.createFromUsbDevice(context, device, iface) ?: return@forEach
 
                 try {
-                    // TODO: We should also support multiple SEs over USB readers (the code here already does, UI doesn't yet)
-                    val channels = tryOpenChannelWithKnownAids(supportsMultiSE = false) { isdrAid, seId ->
+                    val channels = tryOpenChannelWithKnownAids(supportsMultiSE = true) { isdrAid, seId ->
                         euiccChannelFactory.tryOpenUsbEuiccChannel(ccidCtx, isdrAid, seId)
                     }
                     if (channels.isNotEmpty() && channels[0].valid) {
