@@ -283,7 +283,8 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
         // Add before removing to avoid out-of-bounds problems
         pages.addAll(existingUsbPageIndex, usbPages)
-        pages.removeAt(existingUsbPageIndex)
+        // Remove the old USB reader page
+        pages.removeAt(existingUsbPageIndex + usbPages.size)
 
         if (pages.size > 1) {
             tabs.visibility = View.VISIBLE
