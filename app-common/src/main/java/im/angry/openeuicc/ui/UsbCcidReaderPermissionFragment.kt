@@ -14,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -69,7 +68,7 @@ class UsbCcidReaderPermissionFragment : Fragment(), OpenEuiccContextMarker {
 
     private lateinit var text: TextView
     private lateinit var permissionButton: Button
-    private lateinit var loadingProgress: ProgressBar
+    private lateinit var loadingProgress: View
 
     private var usbDevice: UsbDevice? = null
 
@@ -150,7 +149,9 @@ class UsbCcidReaderPermissionFragment : Fragment(), OpenEuiccContextMarker {
             text.visibility = View.VISIBLE
             permissionButton.visibility = View.VISIBLE
         } else if (device != null && canOpen) {
-            val seIds = euiccChannelManager.flowEuiccSecureElements(EuiccChannelManager.USB_CHANNEL_ID, 0).toList()
+            val seIds = withContext(Dispatchers.IO) {
+                euiccChannelManager.flowEuiccSecureElements(EuiccChannelManager.USB_CHANNEL_ID, 0).toList()
+            }
             (requireActivity() as MainActivity).instantiateUsbTabs(seIds)
         } else {
             loadingProgress.visibility = View.GONE
