@@ -52,18 +52,30 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     private var refreshing = false
 
     private data class Page(
+        val id: Long,
         val logicalSlotId: Int,
         val title: String,
         val createFragment: () -> Fragment
     )
 
     private val pages: MutableList<Page> = mutableListOf()
+    private var nextPageId = 0L
+
+    private fun newPage(
+        logicalSlotId: Int,
+        title: String,
+        createFragment: () -> Fragment
+    ): Page = Page(nextPageId++, logicalSlotId, title, createFragment)
 
     private val pagerAdapter by lazy {
         object : FragmentStateAdapter(this) {
             override fun getItemCount() = pages.size
 
             override fun createFragment(position: Int): Fragment = pages[position].createFragment()
+
+            override fun getItemId(position: Int): Long = pages[position].id
+
+            override fun containsItem(itemId: Long): Boolean = pages.any { it.id == itemId }
         }
     }
 
@@ -179,7 +191,7 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
                     } else {
                         appContainer.customizableTextProvider.formatNonUsbChannelName(channel.logicalSlotId)
                     }
-                    newPages.add(Page(channel.logicalSlotId, channelName) {
+                    newPages.add(newPage(channel.logicalSlotId, channelName) {
                         appContainer.uiComponentFactory.createEuiccManagementFragment(
                             slotId,
                             portId,
@@ -193,7 +205,7 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         // If USB readers exist, add them at the very last
         // We use a wrapper fragment to handle logic specific to USB readers
         usbDevice?.let {
-            newPages.add(Page(EuiccChannelManager.USB_CHANNEL_ID, getString(R.string.channel_name_format_usb)) {
+            newPages.add(newPage(EuiccChannelManager.USB_CHANNEL_ID, getString(R.string.channel_name_format_usb)) {
                 UsbCcidReaderPermissionFragment()
             })
         }
@@ -202,7 +214,7 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         if (newPages.size > 1) {
             tabs.visibility = View.VISIBLE
         } else if (newPages.isEmpty()) {
-            newPages.add(Page(-1, "") {
+            newPages.add(newPage(-1, "") {
                 appContainer.uiComponentFactory.createNoEuiccPlaceholderFragment()
             })
         }
@@ -272,7 +284,7 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
                 } else {
                     getString(R.string.channel_name_format_usb_se, seId.id)
                 }
-                Page(EuiccChannelManager.USB_CHANNEL_ID, name) {
+                newPage(EuiccChannelManager.USB_CHANNEL_ID, name) {
                     appContainer.uiComponentFactory.createEuiccManagementFragment(
                         EuiccChannelManager.USB_CHANNEL_ID,
                         0,
