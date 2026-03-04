@@ -5,7 +5,8 @@ enum class ProfileDownloadState(val progress: Int) {
     Connecting(20),  // Before {server,client} authentication
     Authenticating(40),  // {server,client} authentication
     Downloading(60),  // prepare download, get bpp from es9p
-    Finalizing(80); // load bpp
+    Finalizing(80), // load bpp
+    Complete(100); // profile installation final result is success
 
     companion object {
         fun lookupStateFromProgress(progress: Int) =

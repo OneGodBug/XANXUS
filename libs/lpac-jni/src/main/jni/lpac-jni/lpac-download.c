@@ -1,5 +1,7 @@
+#include <euicc/es8p.h>
 #include <euicc/es9p.h>
 #include <euicc/es10b.h>
+#include <euicc/tostr.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syslog.h>
@@ -10,6 +12,13 @@ jobject download_state_connecting;
 jobject download_state_authenticating;
 jobject download_state_downloading;
 jobject download_state_finalizing;
+jobject download_state_complete;
+
+jclass profile_download_metadata_class;
+jmethodID profile_download_metadata_ctor;
+
+jclass profile_installation_result_class;
+jmethodID profile_installation_result_ctor;
 
 jmethodID on_state_update;
 
@@ -49,11 +58,27 @@ void lpac_download_init() {
     download_state_finalizing = (*env)->GetStaticObjectField(env, download_state_class,
                                                              download_state_finalizng_field);
     download_state_finalizing = (*env)->NewGlobalRef(env, download_state_finalizing);
+    jfieldID download_state_complete_field = (*env)->GetStaticFieldID(env, download_state_class,
+                                                                      "Complete",
+                                                                      "Lnet/typeblog/lpac_jni/ProfileDownloadState;");
+    download_state_complete = (*env)->GetStaticObjectField(env, download_state_class,
+                                                           download_state_complete_field);
+    download_state_complete = (*env)->NewGlobalRef(env, download_state_complete);
 
     jclass download_callback_class = (*env)->FindClass(env,
                                                        "net/typeblog/lpac_jni/ProfileDownloadCallback");
     on_state_update = (*env)->GetMethodID(env, download_callback_class, "onStateUpdate",
-                                          "(Lnet/typeblog/lpac_jni/ProfileDownloadState;)V");
+                                          "(Lnet/typeblog/lpac_jni/ProfileDownloadState;Lnet/typeblog/lpac_jni/ProfileDownloadMetadata;Lnet/typeblog/lpac_jni/ProfileInstallationResult;)V");
+
+    profile_download_metadata_class = (*env)->FindClass(env, "net/typeblog/lpac_jni/ProfileDownloadMetadata");
+    profile_download_metadata_class = (*env)->NewGlobalRef(env, profile_download_metadata_class);
+    profile_download_metadata_ctor = (*env)->GetMethodID(env, profile_download_metadata_class, "<init>",
+                                                         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+
+    profile_installation_result_class = (*env)->FindClass(env, "net/typeblog/lpac_jni/ProfileInstallationResult");
+    profile_installation_result_class = (*env)->NewGlobalRef(env, profile_installation_result_class);
+    profile_installation_result_ctor = (*env)->GetMethodID(env, profile_installation_result_class, "<init>",
+                                                           "(Ljava/lang/String;J)V");
 }
 
 JNIEXPORT jint JNICALL
@@ -63,6 +88,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
                                                     jobject callback) {
     struct euicc_ctx *ctx = (struct euicc_ctx *) handle;
     struct es10b_load_bound_profile_package_result es10b_load_bound_profile_package_result;
+    struct es8p_metadata *profile_metadata = NULL;
     const char *_confirmation_code = NULL;
     const char *_matching_id = NULL;
     const char *_smdp = NULL;
@@ -79,7 +105,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
 
     ctx->http.server_address = _smdp;
 
-    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_preparing);
+    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_preparing, NULL, NULL);
     ret = es10b_get_euicc_challenge_and_info(ctx);
     syslog(LOG_INFO, "es10b_get_euicc_challenge_and_info %d", ret);
     if (ret < 0) {
@@ -87,7 +113,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
         goto out;
     }
 
-    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_connecting);
+    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_connecting, NULL, NULL);
     ret = es9p_initiate_authentication(ctx);
     syslog(LOG_INFO, "es9p_initiate_authentication %d", ret);
     if (ret < 0) {
@@ -95,7 +121,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
         goto out;
     }
 
-    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_authenticating);
+    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_authenticating, NULL, NULL);
     ret = es10b_authenticate_server(ctx, _matching_id, _imei);
     syslog(LOG_INFO, "es10b_authenticate_server %d", ret);
     if (ret < 0) {
@@ -109,7 +135,26 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
         goto out;
     }
 
-    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_downloading);
+    jobject profile_download_metadata = NULL;
+    if (ctx->http._internal.prepare_download_param->b64_profileMetadata) {
+        if (es8p_metadata_parse(&profile_metadata, ctx->http._internal.prepare_download_param->b64_profileMetadata) < 0) {
+            syslog(LOG_WARNING, "es8p_metadata_parse failed");
+            syslog(LOG_DEBUG, "es8p_metadata_parse failed: b64 was: %s", ctx->http._internal.prepare_download_param->b64_profileMetadata);
+        } else {
+            profile_download_metadata = (*env)->NewObject(
+                env,
+                profile_download_metadata_class,
+                profile_download_metadata_ctor,
+                toJString(env, profile_metadata->iccid),
+                toJString(env, profile_metadata->profileName),
+                toJString(env, profile_metadata->serviceProviderName),
+                toJString(env, euicc_profileclass2str(profile_metadata->profileClass))
+            );
+        }
+    }
+    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_downloading,
+                           profile_download_metadata, NULL);
+
     ret = es10b_prepare_download(ctx, _confirmation_code);
     syslog(LOG_INFO, "es10b_prepare_download %d", ret);
     if (ret < 0) {
@@ -121,13 +166,22 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
     if (ret < 0)
         goto out;
 
-    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_finalizing);
+    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_finalizing, NULL, NULL);
     ret = es10b_load_bound_profile_package(ctx, &es10b_load_bound_profile_package_result);
     syslog(LOG_INFO, "es10b_load_bound_profile_package %d, reason %d", ret, es10b_load_bound_profile_package_result.errorReason);
     if (ret < 0) {
         ret = - (int) es10b_load_bound_profile_package_result.errorReason;
         goto out;
     }
+
+    jobject profile_installation_result = (*env)->NewObject(
+        env,
+        profile_installation_result_class,
+        profile_installation_result_ctor,
+        es10b_load_bound_profile_package_result.iccid ? toJString(env, es10b_load_bound_profile_package_result.iccid) : NULL,
+        (jlong) es10b_load_bound_profile_package_result.seqNumber
+    );
+    (*env)->CallVoidMethod(env, callback, on_state_update, download_state_complete, NULL, profile_installation_result);
 
     euicc_http_cleanup(ctx);
 
@@ -141,6 +195,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
     (*env)->ReleaseStringUTFChars(env, smdp, _smdp);
     if (_imei != NULL)
         (*env)->ReleaseStringUTFChars(env, imei, _imei);
+    es8p_metadata_free(&profile_metadata);
     return ret;
 }
 
