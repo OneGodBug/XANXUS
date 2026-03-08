@@ -11,9 +11,11 @@ endef
 include $(CLEAR_VARS)
 # libcjson
 LOCAL_MODULE := lpac-cjson
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/cjson
 LOCAL_SRC_FILES := \
   $(call all-c-files-under, cjson/cjson) \
-	$(call all-c-files-under, lpac/cjson-ext)
+	$(call all-c-files-under, lpac/cjson-ext/cjson-ext)
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -23,7 +25,7 @@ LOCAL_STATIC_LIBRARIES := lpac-cjson
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/lpac \
 	$(LOCAL_PATH)/lpac/cjson-ext \
-	$(LOCAL_PATH)/cjson \
+	$(LOCAL_PATH)/cjson
 LOCAL_SRC_FILES := \
 	$(call all-c-files-under, lpac/euicc)
 include $(BUILD_STATIC_LIBRARY)
