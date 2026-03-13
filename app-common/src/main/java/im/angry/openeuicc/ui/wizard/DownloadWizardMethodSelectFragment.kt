@@ -126,14 +126,13 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
             state.matchingId = parsed.matchingId
             state.confirmationCodeRequired = parsed.confirmationCodeRequired
             gotoNextFragment(DownloadWizardDetailsFragment())
-        } catch (e: IllegalArgumentException) {
-            AlertDialog.Builder(requireContext()).apply {
-                setTitle(R.string.profile_download_incorrect_lpa_string)
-                setMessage(R.string.profile_download_incorrect_lpa_string_message)
-                setCancelable(true)
-                setNegativeButton(android.R.string.cancel, null)
-                show()
-            }
+        } catch (_: IllegalArgumentException) {
+            AlertDialog.Builder(requireContext(), R.style.AlertDialogTheme)
+                .setTitle(R.string.profile_download_incorrect_lpa_string)
+                .setMessage(R.string.profile_download_incorrect_lpa_string_message)
+                .setCancelable(true)
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
     }
 

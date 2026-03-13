@@ -126,10 +126,10 @@ fun <T : ActivityResultCaller> T.setupLogSaving(
                 }
             }
 
-            AlertDialog.Builder(context).apply {
-                setMessage(R.string.logs_saved_message)
-                setNegativeButton(android.R.string.cancel) { _, _ -> }
-                setPositiveButton(android.R.string.ok) { _, _ ->
+            AlertDialog.Builder(context, R.style.AlertDialogTheme)
+                .setMessage(R.string.logs_saved_message)
+                .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                .setPositiveButton(android.R.string.ok) { _, _ ->
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         clipData = ClipData.newUri(context.contentResolver, lastFileName, uri)
@@ -137,10 +137,9 @@ fun <T : ActivityResultCaller> T.setupLogSaving(
                         putExtra(Intent.EXTRA_STREAM, uri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-
                     context.startActivity(Intent.createChooser(intent, null))
                 }
-            }.show()
+                .show()
         }
 
     return {
