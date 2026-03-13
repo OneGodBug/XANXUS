@@ -25,6 +25,8 @@ android {
         minSdk = 28
         targetSdk = 35
 
+        resourceConfigurations += setOf("en", "ja", "zh-rCN", "zh-rTW")
+
         emitAssetStatements("https://easyeuicc.org", "https://preview.easyeuicc.org")
     }
 

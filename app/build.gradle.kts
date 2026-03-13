@@ -22,6 +22,8 @@ android {
         minSdk = 30
         targetSdk = 35
 
+        resourceConfigurations += setOf("en", "ja", "zh-rCN", "zh-rTW")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
