@@ -18,7 +18,7 @@ apply {
 android {
     namespace = "im.angry.easyeuicc"
     compileSdk = 35
-    ndkVersion = "26.1.10909125"
+    ndkVersion = "29.0.14206865"
 
     defaultConfig {
         applicationId = "im.angry.easyeuicc"
