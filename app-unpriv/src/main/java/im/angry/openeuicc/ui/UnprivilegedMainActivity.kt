@@ -22,6 +22,10 @@ class UnprivilegedMainActivity : MainActivity(), UnprivilegedEuiccContextMarker 
         if (runBlocking { !preferenceRepository.skipQuickCompatibilityFlow.first() }) {
             startActivity(Intent(this, QuickCompatibilityActivity::class.java))
         }
+        if (runBlocking { FreeDroidFragment.shouldShowWarning(preferenceRepository) }) {
+            FreeDroidFragment.newInstance()
+                .show(supportFragmentManager, FreeDroidFragment.TAG)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

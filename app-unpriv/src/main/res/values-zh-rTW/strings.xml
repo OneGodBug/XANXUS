@@ -16,4 +16,7 @@
     <string name="quick_compatibility_unknown">未知</string>
     <string name="shortcut_sim_toolkit">STK 選單</string>
     <string name="shortcut_sim_toolkit_with_slot">STK 選單 #%d</string>
+    <string name="free_droid_message">Google 宣布，從 2026/2027 年開始，所有在認證 Android 裝置上運行的應用程式都將要求開發者直接向 Google 提交個人識別資訊。由於 %s 的開發者不同意此項要求，因此該應用程式屆時將無法在認證 Android 裝置上運作。</string>
+    <string name="free_droid_details">詳情</string>
+    <string name="free_droid_details_url">https://keepandroidopen.org/zh-TW/</string>
 </resources>
