@@ -59,7 +59,7 @@ class UsbApduInterface(
     override fun connect() {
         ccidCtx.connect()
 
-        if (ccidCtx.transceiver.useTpdu) {
+        if (ccidCtx.transceiver.isTpdu) {
             // Send parameter selection
             // Specs: USB-CCID 3.2.1 TPDU level of exchange
             val parsedAtr = ParsedAtr.parse(atr!!)

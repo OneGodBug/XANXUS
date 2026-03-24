@@ -84,9 +84,7 @@ data class UsbCcidDescription(
 
     private fun hasFeature(feature: Int) = (dwFeatures and feature) != 0
 
-    private fun hasTpduLevel() = hasFeature(FEATURE_EXCHANGE_LEVEL_TPDU)
-    private fun hasShortApduLevel() = hasFeature(FEATURE_EXCHANGE_LEVEL_SHORT_APDU)
-    private fun hasExtendedApduLevel() = hasFeature(FEATURE_EXCHANGE_LEVEL_EXTENDED_APDU)
+    val isTpdu = hasFeature(0x10000)
 
     val voltages: List<Voltage>
         get() {
@@ -99,7 +97,4 @@ data class UsbCcidDescription(
 
     val hasT0Protocol: Boolean
         get() = (dwProtocols and MASK_T0_PROTO) != 0
-
-    val useTpdu: Boolean
-        get() = hasTpduLevel() && !hasShortApduLevel() && !hasExtendedApduLevel()
 }
