@@ -143,7 +143,11 @@ class UsbCcidTransceiver(
 
     val hasAutomaticPps = usbCcidDescription.hasAutomaticPps
 
-    val isTpdu = usbCcidDescription.isTpdu
+    /**
+     * True if this reader only supports TPDU exchange level (no APDU bits advertised).
+     * These readers require PPS + SetParameters handshake during connect().
+     */
+    val useTpdu = usbCcidDescription.useTpdu
 
     private val inputBuffer = ByteArray(usbBulkIn.maxPacketSize)
 
