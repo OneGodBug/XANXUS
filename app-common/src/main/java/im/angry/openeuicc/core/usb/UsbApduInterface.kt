@@ -24,7 +24,18 @@ class UsbApduInterface(
     // ATR parser
     // Specs: ISO/IEC 7816-3:2006 8.2 Answer-to-Reset
     // See also: https://en.wikipedia.org/wiki/Answer_to_reset
-    class ParsedAtr private constructor(val ts: Byte?, val t0: Byte?, val ta1: Byte?, val tb1: Byte?, val tc1: Byte?, val td1: Byte?, val ta2: Byte?, val tb2: Byte?, val tc2: Byte?, val td2: Byte?) {
+    class ParsedAtr private constructor(
+        val ts: Byte?,
+        val t0: Byte?,
+        val ta1: Byte?,
+        val tb1: Byte?,
+        val tc1: Byte?,
+        val td1: Byte?,
+        val ta2: Byte?,
+        val tb2: Byte?,
+        val tc2: Byte?,
+        val td2: Byte?
+    ) {
         companion object {
             fun parse(atr: ByteArray): ParsedAtr {
                 val ts = atr[0]
@@ -49,8 +60,9 @@ class UsbApduInterface(
                     }
                 }
 
-                return ParsedAtr(ts=ts, t0=t0, ta1=tx1[0], tb1=tx1[1], tc1=tx1[2], td1=tx1[3],
-                                 ta2=tx2[0], tb2=tx2[1], tc2=tx2[2], td2=tx2[3],
+                return ParsedAtr(
+                    ts = ts, t0 = t0, ta1 = tx1[0], tb1 = tx1[1], tc1 = tx1[2], td1 = tx1[3],
+                    ta2 = tx2[0], tb2 = tx2[1], tc2 = tx2[2], td2 = tx2[3],
                 )
             }
         }
@@ -59,7 +71,7 @@ class UsbApduInterface(
     override fun connect() {
         ccidCtx.connect()
 
-        if (ccidCtx.transceiver.isTpdu) {
+        if (ccidCtx.useTpdu) {
             // Send parameter selection
             // Specs: USB-CCID 3.2.1 TPDU level of exchange
             val parsedAtr = ParsedAtr.parse(atr!!)

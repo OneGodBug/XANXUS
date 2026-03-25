@@ -143,8 +143,6 @@ class UsbCcidTransceiver(
 
     val hasAutomaticPps = usbCcidDescription.hasAutomaticPps
 
-    val isTpdu = usbCcidDescription.isTpdu
-
     private val inputBuffer = ByteArray(usbBulkIn.maxPacketSize)
 
     private var currentSequenceNumber: Byte = 0
