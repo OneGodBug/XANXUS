@@ -74,6 +74,8 @@
     <string name="download_wizard">Download Wizard</string>
     <string name="download_wizard_back">Back</string>
     <string name="download_wizard_next">Next</string>
+    <string name="download_wizard_low_power">Low Power WARNING</string>
+    <string name="download_wizard_low_power_content">Your download process may be interrupted unexpectedly due to insufficient power and sudden shutdown when the battery is low.\n\nThe screen will remain on during the download process.\n\nPlease connect an external power source to continue.</string>
     <string name="download_wizard_slot_removed">Selected SIM has been removed</string>
     <string name="download_wizard_slot_select">Select or confirm the eSIM you would like to download to:</string>
     <string name="download_wizard_slot_type">Type:</string>
