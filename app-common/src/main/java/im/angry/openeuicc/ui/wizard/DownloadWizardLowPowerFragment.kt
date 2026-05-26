@@ -13,13 +13,16 @@ import im.angry.openeuicc.common.R
 
 class DownloadWizardLowPowerFragment : DownloadWizardActivity.DownloadWizardStepFragment() {
     companion object {
+        /** Battery level threshold (in percentage) below which the battery is considered low. */
+        private const val BATTERY_LEVEL_THRESHOLD = 20
+
         fun isBatteryLow(context: Context): Boolean {
             val pm = context.getSystemService(PowerManager::class.java)
             if (pm.isPowerSaveMode) return true
             val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             val intent = context.registerReceiver(null, filter) ?: return false
             val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
-            return level <= 20 // battery level is considered low if it's 20% or less
+            return level <= BATTERY_LEVEL_THRESHOLD
         }
     }
 
