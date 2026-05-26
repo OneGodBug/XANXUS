@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Bundle
+import android.os.PowerManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,8 @@ import im.angry.openeuicc.common.R
 class DownloadWizardLowPowerFragment : DownloadWizardActivity.DownloadWizardStepFragment() {
     companion object {
         fun isBatteryLow(context: Context): Boolean {
+            val pm = context.getSystemService(PowerManager::class.java)
+            if (pm.isPowerSaveMode) return true
             val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             val intent = context.registerReceiver(null, filter) ?: return false
             val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
