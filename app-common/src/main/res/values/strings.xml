@@ -214,6 +214,9 @@
     <string name="pref_advanced_language_desc">Select app language</string>
     <string name="pref_advanced_logs">Logs</string>
     <string name="pref_advanced_logs_desc">View recent debug logs of the application</string>
+    <string name="pref_advanced_http_proxy">HTTP Proxy</string>
+    <string name="pref_advanced_http_proxy_desc">HTTP proxy for outgoing requests</string>
+    <string name="pref_advanced_http_proxy_dialog_message">The proxy should be in the format \"http://&lt;host&gt;:&lt;port&gt;\". Leave blank to DISABLE the proxy.</string>
     <string name="pref_developer">Developer Options</string>
     <string name="pref_developer_refresh_after_switch">Send refresh command to modem</string>
     <string name="pref_developer_refresh_after_switch_desc">Whether to send a refresh command to the modem after switching profiles. Try disabling this if you see crashes.</string>
@@ -233,9 +236,6 @@
     </string-array>
     <string name="pref_developer_isdr_aid_list">Customize ISD-R AID list</string>
     <string name="pref_developer_isdr_aid_list_desc">Some brands of removable eSIMs may use their own non-standard ISD-R AID, rendering them inaccessible to third-party apps. We can attempt to use non-standard AIDs added in this list, but there is no guarantee that they will work.</string>
-    <string name="pref_advanced_http_proxy">HTTP Proxy</string>
-    <string name="pref_advanced_http_proxy_desc">HTTP proxy for outgoing requests</string>
-    <string name="pref_advanced_http_proxy_dialog_message">The proxy should be in the format \"http://&lt;host&gt;:&lt;port&gt;\". Leave blank to DISABLE the proxy.</string>
     <string name="pref_info">Info</string>
     <string name="pref_info_app_version">App Version</string>
     <string name="pref_info_website">Official Website</string>
