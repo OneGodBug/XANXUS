@@ -194,7 +194,7 @@
     <string name="pref_developer_isdr_aid_list_desc">一部ブランドのリムーバブル eSIM は独自の非標準な ISD-R AID を使用しているため、サードパーティー製アプリからアクセスできない場合があります。このリストに追加された非標準な AID の使用を試みますが、動作の保証はできません。</string>
     <string name="pref_developer_http_proxy">HTTP プロキシ</string>
     <string name="pref_developer_http_proxy_desc">デバッグ用に HTTP プロキシを設定してください。</string>
-    <string name="pref_developer_http_proxy_dialog_message">プロキシは次の形式である必要があります「http://&lt;host&gt;:&lt;port&gt;」。\nプロキシを無効にするには、空欄のままにしてください。</string>
+    <string name="pref_developer_http_proxy_dialog_message">プロキシは次の形式である必要があります「http://&lt;host&gt;:&lt;port&gt;」。プロキシを無効にするには、空欄のままにしてください。</string>
     <string name="pref_info">情報</string>
     <string name="pref_info_app_version">アプリバージョン</string>
     <string name="pref_info_website">公式サイト</string>
