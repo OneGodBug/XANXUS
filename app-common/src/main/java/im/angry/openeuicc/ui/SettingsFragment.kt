@@ -76,6 +76,9 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         requirePreference<CheckBoxPreference>("pref_advanced_force_tpdu_mode")
             .bindBooleanFlow(preferenceRepository.forceTpduModeFlow)
 
+        requirePreference<EditTextPreference>("pref_advanced_http_proxy")
+            .bindStringFlow(preferenceRepository.httpProxyFlow)
+
         requirePreference<CheckBoxPreference>("pref_developer_unfiltered_profile_list")
             .bindBooleanFlow(preferenceRepository.unfilteredProfileListFlow)
 
@@ -87,9 +90,6 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
 
         requirePreference<ListPreference>("pref_developer_es10x_mss")
             .bindIntFlow(preferenceRepository.es10xMssFlow, 63)
-
-        requirePreference<EditTextPreference>("pref_developer_http_proxy")
-            .bindStringFlow(preferenceRepository.httpProxyFlow)
 
         requirePreference<Preference>("pref_developer_isdr_aid_list").apply {
             intent = Intent(requireContext(), IsdrAidListActivity::class.java)
