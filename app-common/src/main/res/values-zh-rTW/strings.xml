@@ -86,6 +86,9 @@
     <string name="pref_advanced_disable_safeguard_removable_esim_desc">預設情況下，此應用程式會阻止您停用可插拔 eSIM 中已啟用的設定檔。\n因為這樣做 <i>有時</i> 會導致無法存取。\n勾選此框以 <i>解除</i> 此保護措施。</string>
     <string name="pref_developer_isdr_aid_list_desc">某些品牌的可插拔 eSIM 使用了非標準的 ISD-R AID，導致第三方應用程式無法存取。在此列表裡填寫其使用的非標準 ISD-R AID，App將嘗試存取，但不能保證它們一定有效。</string>
     <string name="pref_developer_es10x_mss_desc">全域 ES10x MSS</string>
+    <string name="pref_developer_http_proxy">HTTP 代理</string>
+    <string name="pref_developer_http_proxy_desc">設定 HTTP 代理用於調試</string>
+    <string name="pref_developer_http_proxy_dialog_message">代理應採用此格式「http://&lt;host&gt;:&lt;port&gt;」.\n留空則禁用代理。</string>
     <string name="pref_info">資訊</string>
     <string name="pref_info_app_version">App 版本</string>
     <string name="pref_info_website">官方網站</string>

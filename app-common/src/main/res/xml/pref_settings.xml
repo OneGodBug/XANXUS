@@ -95,6 +95,13 @@
             app:summary="@string/pref_developer_isdr_aid_list_desc"
             app:title="@string/pref_developer_isdr_aid_list" />
 
+        <EditTextPreference
+            app:dialogMessage="@string/pref_developer_http_proxy_dialog_message"
+            app:iconSpaceReserved="false"
+            app:key="pref_developer_http_proxy"
+            app:summary="@string/pref_developer_http_proxy_desc"
+            app:title="@string/pref_developer_http_proxy" />
+
     </im.angry.openeuicc.ui.preference.LongSummaryPreferenceCategory>
 
     <PreferenceCategory

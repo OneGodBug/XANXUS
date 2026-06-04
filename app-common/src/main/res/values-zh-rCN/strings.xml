@@ -158,6 +158,9 @@
     <string name="pref_developer_unfiltered_profile_list_desc">在配置文件列表中包括非生产环境的配置文件</string>
     <string name="pref_developer_ignore_tls_certificate">无视 SM-DP+ 的 TLS 证书</string>
     <string name="pref_developer_ignore_tls_certificate_desc">允许 RSP 服务器使用任意证书</string>
+    <string name="pref_developer_http_proxy">HTTP 代理</string>
+    <string name="pref_developer_http_proxy_desc">设置 HTTP 代理用于调试</string>
+    <string name="pref_developer_http_proxy_dialog_message">代理应采用此格式 "http://&lt;host&gt;:&lt;port&gt;"。\n留空则禁用代理。</string>
     <string name="euicc_info_unavailable">无信息</string>
     <string name="toast_euicc_memory_reset_confirm_text_mismatched">输入的确认文本不匹配</string>
     <string name="toast_euicc_memory_reset_finished">此芯片已被擦除</string>
