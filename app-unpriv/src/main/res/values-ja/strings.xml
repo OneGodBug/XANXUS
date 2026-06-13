@@ -9,8 +9,9 @@
     <!-- Quick Compatibility -->
     <string name="quick_compatibility">クイックで互換性を確認</string>
     <string name="quick_compatibility_compatible">このデバイスで「%s」の対応カードを管理できます</string>
-    <string name="quick_compatibility_not_compatible">使用しているデバイスは「%s」と互換性がありません</string>
-    <string name="quick_compatibility_not_compatible_but_usb">使用しているデバイスは「%s」と完全に互換性がありません。ただし、USB スマートカードリーダーを使用すればほぼすべての機能を利用できます。</string>
+    <string name="quick_compatibility_compatible_one_slot">このデバイスで「%s」の対応カードを管理できます。カードを「%s」に挿入してください。</string>
+    <string name="quick_compatibility_incompatible">使用しているデバイスは「%s」と互換性がありません</string>
+    <string name="quick_compatibility_incompatible_usb">使用しているデバイスは「%s」と互換性がありません。ただし、USB スマートカードリーダーを使用すればほぼすべての機能を利用できます。</string>
     <string name="quick_compatibility_result_slots">アクセス可能スロット: %s</string>
     <string name="quick_compatibility_result_slots_isdr">ISD-R アクセス: %s</string>
     <string name="quick_compatibility_result_notes">注意: これらの結果は参考値です。上記に記載されていない SIM スロットでも、<i>SIM カードを挿入</i>すれば互換性がある場合があります。</string>

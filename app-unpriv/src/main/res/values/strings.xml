@@ -17,9 +17,10 @@
 
     <!-- Quick Compatibility -->
     <string name="quick_compatibility">Quick Compatibility Check</string>
-    <string name="quick_compatibility_compatible">Your smartphone can manage %s-compatible cards</string>
-    <string name="quick_compatibility_not_compatible">Your smartphone is not compatible with %s</string>
-    <string name="quick_compatibility_not_compatible_but_usb">Your smartphone is not fully compatible with %s. However, you can still use a USB smart card reader for near-full functionality.</string>
+    <string name="quick_compatibility_compatible">Your smartphone can manage %[0]s-compatible cards</string>
+    <string name="quick_compatibility_compatible_one_slot">Your smartphone can manage %[0]s-compatible cards, please insert the card into %[1]s.</string>
+    <string name="quick_compatibility_incompatible">Your smartphone is not compatible with %[0]s</string>
+    <string name="quick_compatibility_incompatible_usb">Your smartphone is not compatible with %[0]s. However, you can still use a USB smart card reader for near-full functionality.</string>
     <string name="quick_compatibility_result_slots">Accessible slots: %s</string>
     <string name="quick_compatibility_result_slots_isdr">ISD-R access: %s</string>
     <string name="quick_compatibility_result_notes">Note: these results are for reference only. Even if a SIM slot is not listed above, it <i>may</i> be compatible as well once a SIM card is inserted.</string>

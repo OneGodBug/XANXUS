@@ -25,7 +25,7 @@ open class QuickCompatibilityFragment : Fragment(), UnprivilegedEuiccContextMark
     companion object {
         enum class Compatibility {
             COMPATIBLE,
-            NOT_COMPATIBLE,
+            INCOMPATIBLE,
         }
 
         data class CompatibilityResult(
@@ -122,7 +122,7 @@ open class QuickCompatibilityFragment : Fragment(), UnprivilegedEuiccContextMark
     private suspend fun getCompatibilityCheckResult(): CompatibilityResult {
         val service = connectSEService(requireContext())
         if (!service.isConnected) {
-            return CompatibilityResult(Compatibility.NOT_COMPATIBLE)
+            return CompatibilityResult(Compatibility.INCOMPATIBLE)
         }
         val readers = service.readers.filter(Reader::isSIM)
         val omapiSlots = readers.mapNotNull(Reader::slotIndex)
@@ -143,7 +143,7 @@ open class QuickCompatibilityFragment : Fragment(), UnprivilegedEuiccContextMark
             }
         }
         if (omapiSlots.isEmpty()) {
-            return CompatibilityResult(Compatibility.NOT_COMPATIBLE)
+            return CompatibilityResult(Compatibility.INCOMPATIBLE)
         }
         val formatChannelName = appContainer.customizableTextProvider::formatNonUsbChannelName
         return CompatibilityResult(
@@ -156,15 +156,24 @@ open class QuickCompatibilityFragment : Fragment(), UnprivilegedEuiccContextMark
     open fun formatConclusion(result: CompatibilityResult): String {
         val usbHost = requireContext().packageManager
             .hasSystemFeature(PackageManager.FEATURE_USB_HOST)
+
+        val oneSlot = result.slotsOmapi.size > result.slotsIsdr.size &&
+            result.slotsIsdr.size == 1
+
         val resId = when (result.compatibility) {
-            Compatibility.COMPATIBLE ->
+            Compatibility.COMPATIBLE -> if (oneSlot)
+                R.string.quick_compatibility_compatible_one_slot else
                 R.string.quick_compatibility_compatible
 
-            Compatibility.NOT_COMPATIBLE -> if (usbHost)
-                R.string.quick_compatibility_not_compatible_but_usb else
-                R.string.quick_compatibility_not_compatible
+            Compatibility.INCOMPATIBLE -> if (usbHost)
+                R.string.quick_compatibility_incompatible_usb else
+                R.string.quick_compatibility_incompatible
         }
-        return getString(resId, getString(R.string.app_name))
+        return getString(
+            resId,
+            getString(R.string.app_name),
+            result.slotsOmapi.singleOrNull(),
+        )
     }
 
     open fun formatDeviceInformation() = buildString {
