@@ -1,4 +1,5 @@
 import im.angry.openeuicc.build.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -17,15 +18,19 @@ apply {
 
 android {
     namespace = "im.angry.easyeuicc"
-    compileSdk = 35
+    compileSdk = 37
     ndkVersion = "26.1.10909125"
 
     defaultConfig {
         applicationId = "im.angry.easyeuicc"
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 37
 
         emitAssetStatements("https://easyeuicc.org", "https://preview.easyeuicc.org")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -37,12 +42,11 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_11
     }
 }
 

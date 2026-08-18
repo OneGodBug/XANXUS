@@ -3,13 +3,8 @@ plugins {
 }
 
 android {
-    compileSdk = 31
+    compileSdk = 37
     namespace = "im.angry.hidden.apis"
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_7
-    targetCompatibility = JavaVersion.VERSION_1_7
 }
 
 dependencies {
