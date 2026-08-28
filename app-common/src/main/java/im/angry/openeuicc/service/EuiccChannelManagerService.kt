@@ -17,7 +17,6 @@ import im.angry.openeuicc.core.EuiccChannelManager
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -36,9 +35,7 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.yield
 import net.typeblog.lpac_jni.ProfileDownloadInput
@@ -62,7 +59,8 @@ import net.typeblog.lpac_jni.ProfileDownloadState
  * lifecycle context and return a Flow instance for the UI component to subscribe to its
  * progress.
  */
-class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
+// open so that tests can substitute fakes for the service (see DownloadTaskLauncherTest)
+open class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
     companion object {
         private const val TAG = "EuiccChannelManagerService"
         private const val CHANNEL_ID = "tasks"
@@ -396,12 +394,12 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
         )
     }
 
-    suspend fun waitForForegroundTask() {
+    open suspend fun waitForForegroundTask() {
         foregroundTaskState.takeWhile { it != ForegroundTaskState.Idle }
             .collect()
     }
 
-    fun launchProfileDownloadTask(
+    open fun launchProfileDownloadTask(
         slotId: Int, portId: Int, seId: EuiccChannel.SecureElementId,
         input: ProfileDownloadInput,
     ): ForegroundTaskHandle =
@@ -431,17 +429,8 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
                             // Try to receive a signal for confirmation while blocking this thread
                             // This of course assumes we're NOT on the main thread here. We aren't,
                             // because we don't run download on the main thread; see withEuiccChannel.
-                            return@downloadProfile runBlocking {
-                                try {
-                                    // We can't wait indefinitely; just time out after 1 minute.
-                                    withTimeout(60 * 1000) {
-                                        backChannel.receive() as Boolean
-                                    }
-                                } catch (_: TimeoutCancellationException) {
-                                    // Default to cancelling / aborting here if we didn't receive a confirmation signal
-                                    false
-                                }
-                            }
+                            // The default (timeout) behavior is to cancel the download.
+                            return@downloadProfile awaitBackChannelConfirmation(backChannel)
                         }
 
                         true
