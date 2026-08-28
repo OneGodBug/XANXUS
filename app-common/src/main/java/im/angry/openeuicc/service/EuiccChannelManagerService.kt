@@ -17,6 +17,7 @@ import im.angry.openeuicc.core.EuiccChannelManager
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -35,7 +36,9 @@ import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.yield
 import net.typeblog.lpac_jni.ProfileDownloadInput
@@ -429,8 +432,17 @@ open class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMark
                             // Try to receive a signal for confirmation while blocking this thread
                             // This of course assumes we're NOT on the main thread here. We aren't,
                             // because we don't run download on the main thread; see withEuiccChannel.
-                            // The default (timeout) behavior is to cancel the download.
-                            return@downloadProfile awaitBackChannelConfirmation(backChannel)
+                            return@downloadProfile runBlocking {
+                                try {
+                                    // We can't wait indefinitely; just time out after 1 minute.
+                                    withTimeout(60 * 1000) {
+                                        backChannel.receive() as Boolean
+                                    }
+                                } catch (_: TimeoutCancellationException) {
+                                    // Default to cancelling / aborting here if we didn't receive a confirmation signal
+                                    false
+                                }
+                            }
                         }
 
                         true
