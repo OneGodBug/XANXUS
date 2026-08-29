@@ -84,7 +84,11 @@ class DownloadTaskLauncherTest {
     private suspend fun awaitTaskDone(
         handle: EuiccChannelManagerService.ForegroundTaskHandle
     ): EuiccChannelManagerService.ForegroundTaskState.Done = coroutineScope {
-        val states = mutableListOf<EuiccChannelManagerService.ForegroundTaskState>()
+        // Collector runs on Dispatchers.Default while awaitMainLooper iterates on the
+        // test thread; a plain ArrayList would throw ConcurrentModificationException.
+        // CopyOnWriteArrayList iterates over a snapshot, so concurrent adds are safe.
+        val states =
+            java.util.concurrent.CopyOnWriteArrayList<EuiccChannelManagerService.ForegroundTaskState>()
         val collector = async(Dispatchers.Default) { handle.stateFlow.collect { states += it } }
         try {
             awaitMainLooper {
