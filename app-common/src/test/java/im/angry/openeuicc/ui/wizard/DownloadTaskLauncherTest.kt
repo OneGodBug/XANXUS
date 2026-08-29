@@ -9,7 +9,6 @@ import im.angry.openeuicc.testutil.FakeLpa
 import im.angry.openeuicc.testutil.TestOpenEuiccApplication
 import im.angry.openeuicc.testutil.awaitMainLooper
 import android.os.Looper
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
@@ -84,12 +83,11 @@ class DownloadTaskLauncherTest {
     private suspend fun awaitTaskDone(
         handle: EuiccChannelManagerService.ForegroundTaskHandle
     ): EuiccChannelManagerService.ForegroundTaskState.Done = coroutineScope {
-        // Collector runs on Dispatchers.Default while awaitMainLooper iterates on the
-        // test thread; a plain ArrayList would throw ConcurrentModificationException.
-        // CopyOnWriteArrayList iterates over a snapshot, so concurrent adds are safe.
-        val states =
-            java.util.concurrent.CopyOnWriteArrayList<EuiccChannelManagerService.ForegroundTaskState>()
-        val collector = async(Dispatchers.Default) { handle.stateFlow.collect { states += it } }
+        // Collect on the test thread (inherited from runBlocking): flow emissions always
+        // run the collect body on this coroutine's dispatcher, so adds happen on the same
+        // thread that awaitMainLooper reads from -- no concurrent access, plain list is safe.
+        val states = mutableListOf<EuiccChannelManagerService.ForegroundTaskState>()
+        val collector = async { handle.stateFlow.collect { states += it } }
         try {
             awaitMainLooper {
                 states.any { it is EuiccChannelManagerService.ForegroundTaskState.Done }
