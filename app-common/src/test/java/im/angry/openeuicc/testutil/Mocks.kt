@@ -17,10 +17,10 @@ import net.typeblog.lpac_jni.ProfileDownloadInput
 import net.typeblog.lpac_jni.ProfileDownloadState
 
 /**
- * Fakes for the dependencies *below* EuiccChannelManagerService (manager →
+ * Mocks for the dependencies *below* EuiccChannelManagerService (manager →
  * channel → LPA), used by Robolectric tests that exercise the real service.
  *
- * The service itself is never faked; tests build it with
+ * The service itself is never mocked; tests build it with
  * Robolectric.buildService() and only swap out what the service talks to.
  */
 
@@ -33,7 +33,7 @@ import net.typeblog.lpac_jni.ProfileDownloadState
  * assert whether the download was confirmed or cancelled.
  *
  * By default (no pre-confirmation states) it jumps straight to
- * ConfirmingDownload, matching the historical behavior of this fake.
+ * ConfirmingDownload, matching the historical behavior of this mock.
  *
  * Optional controls to simulate realistic downloads:
  *  - [failAfter]: throw a ProfileDownloadException right after emitting this
@@ -43,12 +43,12 @@ import net.typeblog.lpac_jni.ProfileDownloadState
  *    emitting this state until [releaseHold] is called, so tests can inspect
  *    the UI mid-download.
  */
-class FakeLpa(
+class MockLpa(
     preConfirmationStates: List<ProfileDownloadState> = emptyList(),
     failAfter: ProfileDownloadState? = null,
     holdAt: ProfileDownloadState? = null,
 ) : LocalProfileAssistant {
-    // Mutable so tests sharing a common setUp() can configure the fake right
+    // Mutable so tests sharing a common setUp() can configure the mock right
     // before starting the download.
     var preConfirmationStates: List<ProfileDownloadState> = preConfirmationStates
     var failAfter: ProfileDownloadState? = failAfter
@@ -82,7 +82,7 @@ class FakeLpa(
         downloadStarted.complete(Unit)
         for (state in preConfirmationStates) {
             // The callback is invoked first so that the service can record the
-            // progress update before the fake advances or fails.
+            // progress update before the mock advances or fails.
             callback.onStatusUpdate(state)
             stateReached.getOrPut(state::class) { CompletableDeferred() }.complete(Unit)
             // ProfileDownloadState subclasses are plain classes without equals(),
@@ -124,7 +124,7 @@ class FakeLpa(
     override val valid = true
     override val profiles = emptyList<LocalProfileInfo>()
     override val notifications = emptyList<LocalProfileNotification>()
-    override val eID = "fake-eid"
+    override val eID = "mock-eid"
     override val euiccInfo2: EuiccInfo2? = null
     override fun setEs10xMss(mss: Byte) {}
     override fun enableProfile(iccid: String, refresh: Boolean): Boolean = true
@@ -140,12 +140,12 @@ class FakeLpa(
 /**
  * A EuiccChannel that always "finds" the given LPA and physical slot/port.
  */
-class FakeEuiccChannel(
+class MockEuiccChannel(
     override val slotId: Int,
     override val portId: Int,
-    override val lpa: LocalProfileAssistant = FakeLpa()
+    override val lpa: LocalProfileAssistant = MockLpa()
 ) : EuiccChannel {
-    override val type = "fake"
+    override val type = "mock"
     override val port = FakeUiccPortInfoCompat(FakeUiccCardInfoCompat(slotId))
     override val logicalSlotId = slotId
     override val seId = EuiccChannel.SecureElementId.DEFAULT
@@ -170,7 +170,7 @@ class FakeEuiccChannel(
  * A EuiccChannelManager that hands out the same [channel] for every request and
  * records how it was asked to resolve channels (slot/port pairs).
  */
-class FakeEuiccChannelManager(val channel: EuiccChannel) : EuiccChannelManager {
+class MockEuiccChannelManager(val channel: EuiccChannel) : EuiccChannelManager {
     /** Every withEuiccChannel(physical slot/port) request, in order. */
     val physicalChannelRequests = mutableListOf<Pair<Int, Int>>()
 

@@ -12,29 +12,29 @@ import im.angry.openeuicc.util.PreferenceRepository
 /**
  * Application used by Robolectric tests: swaps the app container's
  * EuiccChannelManagerFactory so that the *real* EuiccChannelManagerService
- * receives a fake EuiccChannelManager (and LPA) when it asks for one.
+ * receives a mock EuiccChannelManager (and LPA) when it asks for one.
  *
- * The fake must be installed before the service is built:
- * `TestOpenEuiccApplication.fakeEuiccChannelManager = ...`
+ * The mock must be installed before the service is built:
+ * `TestOpenEuiccApplication.mockEuiccChannelManager = ...`
  */
 class TestOpenEuiccApplication : OpenEuiccApplication() {
     companion object {
-        lateinit var fakeEuiccChannelManager: EuiccChannelManager
+        lateinit var mockEuiccChannelManager: EuiccChannelManager
     }
 
     override val appContainer: AppContainer by lazy {
-        TestAppContainer(this, fakeEuiccChannelManager)
+        TestAppContainer(this, mockEuiccChannelManager)
     }
 }
 
 class TestAppContainer(
     context: Context,
-    private val fakeEuiccChannelManager: EuiccChannelManager
+    private val mockEuiccChannelManager: EuiccChannelManager
 ) : DefaultAppContainer(context) {
     override val euiccChannelManagerFactory: EuiccChannelManagerFactory =
         object : EuiccChannelManagerFactory {
             override fun createEuiccChannelManager(serviceContext: Service): EuiccChannelManager =
-                fakeEuiccChannelManager
+                mockEuiccChannelManager
         }
 
     // Real PreferenceRepository (DataStore-backed) is fine: it returns defaults.

@@ -12,9 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.service.EuiccChannelManagerService
-import im.angry.openeuicc.testutil.FakeEuiccChannel
-import im.angry.openeuicc.testutil.FakeEuiccChannelManager
-import im.angry.openeuicc.testutil.FakeLpa
+import im.angry.openeuicc.testutil.MockEuiccChannel
+import im.angry.openeuicc.testutil.MockEuiccChannelManager
+import im.angry.openeuicc.testutil.MockLpa
 import im.angry.openeuicc.testutil.TestOpenEuiccApplication
 import im.angry.openeuicc.testutil.awaitMainLooper
 import kotlinx.coroutines.runBlocking
@@ -38,13 +38,13 @@ import org.robolectric.annotation.Config
  * whole wizard flow -- slot select -> method select -> details -> download
  * progress -- until the download completes.
  *
- * Only the dependencies *below* EuiccChannelManagerService are faked (manager ->
- * channel -> LPA, see testutil.Fakes). The activity, every wizard fragment, the
+ * Only the dependencies *below* EuiccChannelManagerService are mocked (manager ->
+ * channel -> LPA, see testutil.Mocks). The activity, every wizard fragment, the
  * in-process service binding and the entire foreground-task machinery are the
  * real production code, so this test protects the actual UI flow that a user
  * experiences, not just the launchProfileDownload() contract in isolation.
  *
- * The FakeLpa simulates a download that reaches ProfileDownloadState.ConfirmingDownload
+ * The MockLpa simulates a download that reaches ProfileDownloadState.ConfirmingDownload
  * and blocks until the subscriber confirms through the task's back channel --
  * exactly what a real download does before finishing.
  */
@@ -61,17 +61,17 @@ class DownloadWizardFlowTest {
 
     private lateinit var activity: DownloadWizardActivity
     private lateinit var service: EuiccChannelManagerService
-    private lateinit var channel: FakeEuiccChannel
-    private lateinit var manager: FakeEuiccChannelManager
+    private lateinit var channel: MockEuiccChannel
+    private lateinit var manager: MockEuiccChannelManager
 
     @Before
     fun setUp() {
-        channel = FakeEuiccChannel(slotId = 1, portId = 2)
-        manager = FakeEuiccChannelManager(channel)
-        TestOpenEuiccApplication.fakeEuiccChannelManager = manager
+        channel = MockEuiccChannel(slotId = 1, portId = 2)
+        manager = MockEuiccChannelManager(channel)
+        TestOpenEuiccApplication.mockEuiccChannelManager = manager
 
         // Robolectric does not auto-create services on bindService(); register the
-        // REAL EuiccChannelManagerService (with the fake manager below it) as the
+        // REAL EuiccChannelManagerService (with the mock manager below it) as the
         // binding target so that BaseEuiccAccessActivity connects to it in-process.
         service = Robolectric.buildService(EuiccChannelManagerService::class.java).get()
         val bindIntent = Intent(
@@ -154,7 +154,7 @@ class DownloadWizardFlowTest {
      * startForegroundService() on its own).
      */
     private suspend fun startDownload() {
-        // ---- Slot select: the fake manager exposes exactly one eUICC ----
+        // ---- Slot select: the mock manager exposes exactly one eUICC ----
         val slotList = activity.findViewById<RecyclerView>(R.id.download_slot_list)
         awaitMainLooper { (slotList.adapter?.itemCount ?: 0) > 0 }
         assertEquals(1, slotList.adapter?.itemCount)
@@ -189,7 +189,7 @@ class DownloadWizardFlowTest {
         // The service self-starts via startForegroundService(); Robolectric does
         // not deliver that to onStartCommand() on its own (see
         // DownloadTaskLauncherTest), so simulate the system call once the task
-        // has had a chance to subscribe to foregroundStarted. The fake manager
+        // has had a chance to subscribe to foregroundStarted. The mock manager
         // having resolved the logical slot proves the launch has been reached.
         awaitMainLooper { manager.logicalChannelRequests.isNotEmpty() }
         idle()
@@ -231,7 +231,7 @@ class DownloadWizardFlowTest {
 
     @Test
     fun `wizard runs the full flow through the real service to a completed download`() = runBlocking {
-        val lpa = channel.lpa as FakeLpa
+        val lpa = channel.lpa as MockLpa
 
         startDownload()
 
@@ -268,7 +268,7 @@ class DownloadWizardFlowTest {
 
     @Test
     fun `wizard streams intermediate progress while the download is still running`() = runBlocking {
-        val lpa = channel.lpa as FakeLpa
+        val lpa = channel.lpa as MockLpa
         // Simulate a real download that walks through Preparing, Connecting and
         // Authenticating before asking for metadata confirmation, and park it at
         // Authenticating so we can inspect the UI mid-download.
@@ -306,7 +306,7 @@ class DownloadWizardFlowTest {
 
     @Test
     fun `wizard shows the reached steps and an error when the download fails before confirmation`() = runBlocking {
-        val lpa = channel.lpa as FakeLpa
+        val lpa = channel.lpa as MockLpa
         // The SM-DP+ rejects the device during authentication (step 3), i.e.
         // before any metadata confirmation happens -- this is the failure mode
         // that used to leave the progress UI stuck with no checkmarks at all.

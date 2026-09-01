@@ -3,9 +3,9 @@ package im.angry.openeuicc.ui.wizard
 import android.content.Intent
 import im.angry.openeuicc.core.EuiccChannel
 import im.angry.openeuicc.service.EuiccChannelManagerService
-import im.angry.openeuicc.testutil.FakeEuiccChannel
-import im.angry.openeuicc.testutil.FakeEuiccChannelManager
-import im.angry.openeuicc.testutil.FakeLpa
+import im.angry.openeuicc.testutil.MockEuiccChannel
+import im.angry.openeuicc.testutil.MockEuiccChannelManager
+import im.angry.openeuicc.testutil.MockLpa
 import im.angry.openeuicc.testutil.TestOpenEuiccApplication
 import im.angry.openeuicc.testutil.awaitMainLooper
 import android.os.Looper
@@ -32,7 +32,7 @@ import org.robolectric.annotation.Config
  * Tests launchProfileDownload(), the freestanding implementation of the
  * UI → service contract for profile download, against the REAL
  * EuiccChannelManagerService (built with Robolectric). Only the manager /
- * channel / LPA below the service are faked (see testutil.Fakes).
+ * channel / LPA below the service are mocked (see testutil.Mocks).
  *
  * DownloadWizardProgressFragment MUST call launchProfileDownload() and not
  * re-implement the launch + auto-confirmation inline; the tests here only
@@ -52,14 +52,14 @@ class DownloadTaskLauncherTest {
     )
 
     private lateinit var service: EuiccChannelManagerService
-    private lateinit var channel: FakeEuiccChannel
-    private lateinit var manager: FakeEuiccChannelManager
+    private lateinit var channel: MockEuiccChannel
+    private lateinit var manager: MockEuiccChannelManager
 
     @Before
     fun setUp() {
-        channel = FakeEuiccChannel(slotId = 1, portId = 2)
-        manager = FakeEuiccChannelManager(channel)
-        TestOpenEuiccApplication.fakeEuiccChannelManager = manager
+        channel = MockEuiccChannel(slotId = 1, portId = 2)
+        manager = MockEuiccChannelManager(channel)
+        TestOpenEuiccApplication.mockEuiccChannelManager = manager
         service = Robolectric.buildService(EuiccChannelManagerService::class.java).get()
     }
 
@@ -102,7 +102,7 @@ class DownloadTaskLauncherTest {
 
     @Test
     fun `launchProfileDownload launches through the real service and auto-confirms`() = runBlocking {
-        val lpa = channel.lpa as FakeLpa
+        val lpa = channel.lpa as MockLpa
 
         // launchProfileDownload returns immediately: the back channel is buffered,
         // so the auto-confirmation does not block the caller (the download itself
@@ -136,7 +136,7 @@ class DownloadTaskLauncherTest {
 
     @Test
     fun `autoConfirm=false leaves confirmation to the UI`() = runBlocking {
-        val lpa = channel.lpa as FakeLpa
+        val lpa = channel.lpa as MockLpa
 
         val handle = launchProfileDownload(
             service, manager, logicalSlotId = 0, seId, input, autoConfirm = false
@@ -161,13 +161,13 @@ class DownloadTaskLauncherTest {
         runBlocking {
             // Simulate a download that emits an intermediate state (Preparing)
             // before ConfirmingDownload and parks there until the test releases it.
-            val lpa = FakeLpa(
+            val lpa = MockLpa(
                 preConfirmationStates = listOf(ProfileDownloadState.Preparing()),
                 holdAt = ProfileDownloadState.Preparing(),
             )
-            channel = FakeEuiccChannel(slotId = 1, portId = 2, lpa = lpa)
-            manager = FakeEuiccChannelManager(channel)
-            TestOpenEuiccApplication.fakeEuiccChannelManager = manager
+            channel = MockEuiccChannel(slotId = 1, portId = 2, lpa = lpa)
+            manager = MockEuiccChannelManager(channel)
+            TestOpenEuiccApplication.mockEuiccChannelManager = manager
             service = Robolectric.buildService(EuiccChannelManagerService::class.java).get()
 
             val deferred = async { launchProfileDownload(service, manager, logicalSlotId = 0, seId, input) }

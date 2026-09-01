@@ -3,9 +3,9 @@ package im.angry.openeuicc.service
 import android.content.Intent
 import im.angry.openeuicc.core.EuiccChannel
 import im.angry.openeuicc.service.EuiccChannelManagerService.ForegroundTaskState
-import im.angry.openeuicc.testutil.FakeEuiccChannel
-import im.angry.openeuicc.testutil.FakeEuiccChannelManager
-import im.angry.openeuicc.testutil.FakeLpa
+import im.angry.openeuicc.testutil.MockEuiccChannel
+import im.angry.openeuicc.testutil.MockEuiccChannelManager
+import im.angry.openeuicc.testutil.MockLpa
 import im.angry.openeuicc.testutil.TestOpenEuiccApplication
 import im.angry.openeuicc.testutil.awaitMainLooper
 import android.os.Looper
@@ -27,7 +27,7 @@ import org.robolectric.annotation.Config
 
 /**
  * Tests the real EuiccChannelManagerService (Robolectric) with only the manager /
- * channel / LPA faked -- i.e. the exact service that runs in production.
+ * channel / LPA mocked -- i.e. the exact service that runs in production.
  *
  * These tests pin the profile-download confirmation contract that regressed
  * during the "merge back-communication channels" refactor: the task MUST block
@@ -49,13 +49,13 @@ class EuiccChannelManagerServiceTest {
     )
 
     private lateinit var service: EuiccChannelManagerService
-    private lateinit var lpa: FakeLpa
+    private lateinit var lpa: MockLpa
 
     @Before
     fun setUp() {
-        val channel = FakeEuiccChannel(slotId = 1, portId = 2)
-        lpa = channel.lpa as FakeLpa
-        TestOpenEuiccApplication.fakeEuiccChannelManager = FakeEuiccChannelManager(channel)
+        val channel = MockEuiccChannel(slotId = 1, portId = 2)
+        lpa = channel.lpa as MockLpa
+        TestOpenEuiccApplication.mockEuiccChannelManager = MockEuiccChannelManager(channel)
         service = Robolectric.buildService(EuiccChannelManagerService::class.java).get()
     }
 
