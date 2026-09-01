@@ -25,14 +25,34 @@ import net.typeblog.lpac_jni.ProfileDownloadState
  */
 
 /**
- * A LocalProfileAssistant whose downloadProfile() simulates a download that needs
- * metadata confirmation: it immediately reports
- * ProfileDownloadState.ConfirmingDownload to the callback and blocks until the
- * caller resolves the confirmation (which, in production, the service does by
- * waiting on the task's back channel). The callback's return value is recorded
- * so tests can assert whether the download was confirmed or cancelled.
+ * A LocalProfileAssistant whose downloadProfile() simulates a real download:
+ * it reports the states in [preConfirmationStates] in order, then reports
+ * ProfileDownloadState.ConfirmingDownload and blocks until the caller resolves
+ * the confirmation (which, in production, the service does by waiting on the
+ * task's back channel). The callback's return value is recorded so tests can
+ * assert whether the download was confirmed or cancelled.
+ *
+ * By default (no pre-confirmation states) it jumps straight to
+ * ConfirmingDownload, matching the historical behavior of this fake.
+ *
+ * Optional controls to simulate realistic downloads:
+ *  - [failAfter]: throw a ProfileDownloadException right after emitting this
+ *    state, simulating e.g. the SM-DP+ rejecting the device during
+ *    authentication (before any metadata confirmation happens).
+ *  - [holdAt]: park downloadProfile() (blocking the service's IO thread) after
+ *    emitting this state until [releaseHold] is called, so tests can inspect
+ *    the UI mid-download.
  */
-class FakeLpa : LocalProfileAssistant {
+class FakeLpa(
+    preConfirmationStates: List<ProfileDownloadState> = emptyList(),
+    failAfter: ProfileDownloadState? = null,
+    holdAt: ProfileDownloadState? = null,
+) : LocalProfileAssistant {
+    // Mutable so tests sharing a common setUp() can configure the fake right
+    // before starting the download.
+    var preConfirmationStates: List<ProfileDownloadState> = preConfirmationStates
+    var failAfter: ProfileDownloadState? = failAfter
+    var holdAt: ProfileDownloadState? = holdAt
     /** Completes as soon as downloadProfile() is entered (task reached the LPA). */
     val downloadStarted = CompletableDeferred<Unit>()
 
@@ -42,14 +62,59 @@ class FakeLpa : LocalProfileAssistant {
     /** The input passed to downloadProfile(). */
     var downloadInput: ProfileDownloadInput? = null
 
+    /** Completes once the given state class has been emitted to the callback. */
+    private val stateReached = mutableMapOf<kotlin.reflect.KClass<out ProfileDownloadState>, CompletableDeferred<Unit>>()
+
+    /** Released by the test to let a download parked at [holdAt] continue. */
+    private val holdRelease = CompletableDeferred<Unit>()
+
+    /** The exception thrown when [failAfter] is reached; mutable so tests can inject a realistic one. */
+    var failure: LocalProfileAssistant.ProfileDownloadException = LocalProfileAssistant.ProfileDownloadException(
+        lpaErrorReason = "ES10B_ERROR_REASON_UNDEFINED",
+        lastHttpResponse = null,
+        lastHttpException = null,
+        lastApduResponse = null,
+        lastApduException = null,
+    )
+
     override fun downloadProfile(input: ProfileDownloadInput, callback: ProfileDownloadCallback) {
         downloadInput = input
         downloadStarted.complete(Unit)
+        for (state in preConfirmationStates) {
+            // The callback is invoked first so that the service can record the
+            // progress update before the fake advances or fails.
+            callback.onStatusUpdate(state)
+            stateReached.getOrPut(state::class) { CompletableDeferred() }.complete(Unit)
+            // ProfileDownloadState subclasses are plain classes without equals(),
+            // so compare by class, not by instance.
+            if (failAfter != null && state::class == failAfter!!::class) {
+                throw failure
+            }
+            if (holdAt != null && state::class == holdAt!!::class) {
+                // Park the download here (on the service's IO thread) so the test
+                // can inspect intermediate UI state; the test must call releaseHold().
+                kotlinx.coroutines.runBlocking { holdRelease.await() }
+            }
+        }
         // This blocks the caller (the service's IO thread) until the back channel
         // receives a Boolean -- exactly like a real download reaching the
         // ConfirmingDownload step.
         val result = callback.onStatusUpdate(ProfileDownloadState.ConfirmingDownload(null))
         downloadReturned.complete(result)
+    }
+
+    /** Suspends until the given state class has been emitted by downloadProfile(). */
+    suspend fun awaitStateReached(state: ProfileDownloadState) {
+        stateReached.getOrPut(state::class) { CompletableDeferred() }.await()
+    }
+
+    /** Whether the given state class has already been emitted by downloadProfile(). */
+    fun isStateReached(state: ProfileDownloadState): Boolean =
+        stateReached[state::class]?.isCompleted == true
+
+    /** Releases a download parked at [holdAt]. */
+    fun releaseHold() {
+        holdRelease.complete(Unit)
     }
 
     suspend fun awaitDownloadStarted() = downloadStarted.await()

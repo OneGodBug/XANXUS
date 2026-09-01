@@ -12,13 +12,15 @@ import android.os.Looper
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import org.robolectric.Shadows.shadowOf
+import kotlinx.coroutines.withTimeout
 import net.typeblog.lpac_jni.ProfileDownloadInput
+import net.typeblog.lpac_jni.ProfileDownloadState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -102,16 +104,20 @@ class DownloadTaskLauncherTest {
     fun `launchProfileDownload launches through the real service and auto-confirms`() = runBlocking {
         val lpa = channel.lpa as FakeLpa
 
-        // launchProfileDownload blocks until the service consumes the auto-confirmation
-        // (rendezvous back channel), so pump the main looper until it returns.
+        // launchProfileDownload returns immediately: the back channel is buffered,
+        // so the auto-confirmation does not block the caller (the download itself
+        // only starts after the start command is delivered below).
         val handle = withTimeout(10_000) {
             val deferred = async { launchProfileDownload(service, manager, logicalSlotId = 0, seId, input) }
-            // launchProfileDownload is now suspended at backChannel.send(true); deliver
-            // the start command so the service machinery can run.
+            // Deliver the start command so the service machinery can run.
             startService()
             awaitMainLooper { deferred.isCompleted }
             deferred.await()
         }
+
+        // Wait until the download has actually reached the LPA before asserting
+        // what the service did with it.
+        awaitMainLooper { lpa.downloadStarted.isCompleted }
 
         // The service must have been asked to download with the physical slot/port
         // resolved through the manager (1, 2) and the exact input the UI passed.
@@ -149,4 +155,65 @@ class DownloadTaskLauncherTest {
 
         assertEquals(true, lpa.awaitDownloadResult())
     }
+
+    @Test
+    fun `launchProfileDownload returns before the confirmation step so the caller can observe progress`() =
+        runBlocking {
+            // Simulate a download that emits an intermediate state (Preparing)
+            // before ConfirmingDownload and parks there until the test releases it.
+            val lpa = FakeLpa(
+                preConfirmationStates = listOf(ProfileDownloadState.Preparing()),
+                holdAt = ProfileDownloadState.Preparing(),
+            )
+            channel = FakeEuiccChannel(slotId = 1, portId = 2, lpa = lpa)
+            manager = FakeEuiccChannelManager(channel)
+            TestOpenEuiccApplication.fakeEuiccChannelManager = manager
+            service = Robolectric.buildService(EuiccChannelManagerService::class.java).get()
+
+            val deferred = async { launchProfileDownload(service, manager, logicalSlotId = 0, seId, input) }
+            startService()
+
+            // The download is now parked at Preparing (before ConfirmingDownload).
+            awaitMainLooper { lpa.isStateReached(ProfileDownloadState.Preparing()) }
+
+            // launchProfileDownload must NOT be blocked on the auto-confirmation
+            // back channel: the caller has to be able to subscribe to progress
+            // while the download is still in its early steps. Otherwise the UI
+            // misses every intermediate state (and dies without showing anything
+            // if the download fails before ConfirmingDownload).
+            assertTrue(
+                "launchProfileDownload must return while the download is still at Preparing",
+                deferred.isCompleted
+            )
+            val handle = deferred.await()
+
+            // The caller must be able to observe the intermediate progress state
+            // that was emitted before ConfirmingDownload. Collect on the test
+            // thread (inherited from runBlocking) so the list is never mutated
+            // concurrently, like in awaitTaskDone().
+            val states = mutableListOf<EuiccChannelManagerService.ForegroundTaskState>()
+            val collector = async {
+                handle.stateFlow.collect { states += it }
+            }
+            try {
+                withTimeout(10_000) {
+                    while (states.none {
+                        it is EuiccChannelManagerService.ForegroundTaskState.InProgress &&
+                            it.context is ProfileDownloadState.Preparing
+                    }) {
+                        shadowOf(Looper.getMainLooper()).idle()
+                        yield()
+                    }
+                }
+            } finally {
+                collector.cancel()
+            }
+
+            // Let the download finish; the auto-confirmation already sent by
+            // launchProfileDownload must continue it normally.
+            lpa.releaseHold()
+            val done = awaitTaskDone(handle)
+            assertNull(done.error)
+            assertEquals(true, lpa.awaitDownloadResult())
+        }
 }

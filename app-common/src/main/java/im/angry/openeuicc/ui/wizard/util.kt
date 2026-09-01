@@ -18,9 +18,13 @@ import net.typeblog.lpac_jni.ProfileDownloadInput
  *  3. Launch the download through [service];
  *  4. Send `true` on the handle's back channel so the task does not stall at
  *     ProfileDownloadState.ConfirmingDownload (see
- *     EuiccChannelManagerService.launchProfileDownloadTask and
- *     awaitBackChannelConfirmation). Without this, the download would wait for a
- *     minute and then be cancelled.
+ *     EuiccChannelManagerService.launchProfileDownloadTask). Without this, the
+ *     download would wait for a minute and then be cancelled.
+ *
+ * The back channel is buffered (see launchForegroundTask), so the send in step 4
+ * does not block: this function returns immediately and the caller can subscribe
+ * to the task's state flow before the download has even started, which is what
+ * lets the UI render every intermediate progress state.
  *
  * IMPORTANT: DownloadWizardProgressFragment MUST call this function rather than
  * re-implementing the steps above inline -- the tests only protect code that

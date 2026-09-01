@@ -272,7 +272,8 @@ open class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMark
         task: suspend EuiccChannelManagerService.(Channel<Any>) -> Unit
     ): ForegroundTaskHandle {
         val taskID = System.currentTimeMillis()
-        val backChannel = Channel<Any>()
+        // Buffered so that a subscriber's send() never blocks
+        val backChannel = Channel<Any>(capacity = Channel.BUFFERED)
 
         // Atomically set the state to InProgress. If this returns true, we are
         // the only task currently in progress.

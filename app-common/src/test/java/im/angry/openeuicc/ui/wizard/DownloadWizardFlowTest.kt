@@ -6,6 +6,8 @@ import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
@@ -16,7 +18,9 @@ import im.angry.openeuicc.testutil.FakeLpa
 import im.angry.openeuicc.testutil.TestOpenEuiccApplication
 import im.angry.openeuicc.testutil.awaitMainLooper
 import kotlinx.coroutines.runBlocking
+import net.typeblog.lpac_jni.LocalProfileAssistant
 import net.typeblog.lpac_jni.ProfileDownloadInput
+import net.typeblog.lpac_jni.ProfileDownloadState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -143,10 +147,13 @@ class DownloadWizardFlowTest {
         idle()
     }
 
-    @Test
-    fun `wizard runs the full flow through the real service to a completed download`() = runBlocking {
-        val lpa = channel.lpa as FakeLpa
-
+    /**
+     * Drive the wizard through slot select -> method select -> details form ->
+     * download progress, and kick the service's foreground task machinery by
+     * simulating the start command (Robolectric does not deliver
+     * startForegroundService() on its own).
+     */
+    private suspend fun startDownload() {
         // ---- Slot select: the fake manager exposes exactly one eUICC ----
         val slotList = activity.findViewById<RecyclerView>(R.id.download_slot_list)
         awaitMainLooper { (slotList.adapter?.itemCount ?: 0) > 0 }
@@ -188,6 +195,45 @@ class DownloadWizardFlowTest {
         idle()
         service.onStartCommand(Intent(), 0, 1)
         idle()
+    }
+
+    private fun progressItemHolder(position: Int): RecyclerView.ViewHolder {
+        val progressList = activity.findViewById<RecyclerView>(R.id.download_progress_list)
+        progressList.ensureLaidOut()
+        val holder = progressList.findViewHolderForAdapterPosition(position)
+        assertNotNull("progress item $position should be visible", holder)
+        return holder!!
+    }
+
+    /** Asserts that the given progress step currently shows a checkmark and no error text. */
+    private fun assertProgressItemDone(position: Int) {
+        val holder = progressItemHolder(position)
+        val icon = holder.itemView.findViewById<ImageView>(R.id.download_progress_icon)
+        val errorTitle = holder.itemView.findViewById<TextView>(R.id.download_progress_item_error_title)
+        assertEquals("step $position should show a checkmark", View.VISIBLE, icon.visibility)
+        assertEquals("step $position should not show an error", View.GONE, errorTitle.visibility)
+    }
+
+    /** Asserts that the given progress step currently shows the indeterminate spinner. */
+    private fun assertProgressItemInProgress(position: Int) {
+        val holder = progressItemHolder(position)
+        val progressBar =
+            holder.itemView.findViewById<ProgressBar>(R.id.download_progress_icon_progress)
+        assertEquals("step $position should show the progress spinner", View.VISIBLE, progressBar.visibility)
+    }
+
+    /** Asserts that the given progress step currently shows the error state. */
+    private fun assertProgressItemError(position: Int) {
+        val holder = progressItemHolder(position)
+        val errorTitle = holder.itemView.findViewById<TextView>(R.id.download_progress_item_error_title)
+        assertEquals("step $position should show the error message", View.VISIBLE, errorTitle.visibility)
+    }
+
+    @Test
+    fun `wizard runs the full flow through the real service to a completed download`() = runBlocking {
+        val lpa = channel.lpa as FakeLpa
+
+        startDownload()
 
         // ---- The download must complete and the UI must reflect it ----
         awaitMainLooper { lpa.downloadReturned.isCompleted }
@@ -204,13 +250,8 @@ class DownloadWizardFlowTest {
 
         // UI: every step the download reached shows a checkmark; nothing is stuck
         // in progress; the wizard offers to continue (i.e. no error).
-        val progressList = activity.findViewById<RecyclerView>(R.id.download_progress_list)
-        progressList.ensureLaidOut()
         for (i in 0..2) {
-            val holder = progressList.findViewHolderForAdapterPosition(i)
-            assertNotNull("progress item $i should be visible", holder)
-            val icon = holder!!.itemView.findViewById<ImageView>(R.id.download_progress_icon)
-            assertTrue("step $i should be marked done", icon.visibility == View.VISIBLE)
+            assertProgressItemDone(i)
         }
         // hasNext is true and no error -> the Next button must be visible so the
         // user can leave the (successful) download screen.
@@ -223,5 +264,84 @@ class DownloadWizardFlowTest {
         // (createNextFragment() returns null when there is no error).
         clickNext()
         assertTrue("wizard should finish after a successful download", activity.isFinishing)
+    }
+
+    @Test
+    fun `wizard streams intermediate progress while the download is still running`() = runBlocking {
+        val lpa = channel.lpa as FakeLpa
+        // Simulate a real download that walks through Preparing, Connecting and
+        // Authenticating before asking for metadata confirmation, and park it at
+        // Authenticating so we can inspect the UI mid-download.
+        lpa.preConfirmationStates = listOf(
+            ProfileDownloadState.Preparing(),
+            ProfileDownloadState.Connecting(),
+            ProfileDownloadState.Authenticating(),
+        )
+        lpa.holdAt = ProfileDownloadState.Authenticating()
+
+        startDownload()
+
+        // Wait until the download has actually reached (and is parked at) the
+        // authentication step.
+        awaitMainLooper { lpa.isStateReached(ProfileDownloadState.Authenticating()) }
+
+        // The UI must have streamed the progress live: the earlier steps already
+        // show checkmarks and the current step shows the spinner -- it must NOT
+        // jump straight from "nothing" to "done" at the end.
+        assertProgressItemDone(0)
+        assertProgressItemDone(1)
+        assertProgressItemInProgress(2)
+
+        // Let the download continue; it must complete normally afterwards.
+        lpa.releaseHold()
+        awaitMainLooper { lpa.downloadReturned.isCompleted }
+        awaitMainLooper { currentFragment()?.hasNext == true }
+        assertEquals(true, lpa.awaitDownloadResult())
+        // The steps reached before the confirmation are all done; the download
+        // finishes without leaving anything stuck in progress.
+        for (i in 0..2) {
+            assertProgressItemDone(i)
+        }
+    }
+
+    @Test
+    fun `wizard shows the reached steps and an error when the download fails before confirmation`() = runBlocking {
+        val lpa = channel.lpa as FakeLpa
+        // The SM-DP+ rejects the device during authentication (step 3), i.e.
+        // before any metadata confirmation happens -- this is the failure mode
+        // that used to leave the progress UI stuck with no checkmarks at all.
+        lpa.preConfirmationStates = listOf(
+            ProfileDownloadState.Preparing(),
+            ProfileDownloadState.Connecting(),
+            ProfileDownloadState.Authenticating(),
+        )
+        lpa.failAfter = ProfileDownloadState.Authenticating()
+        lpa.failure = LocalProfileAssistant.ProfileDownloadException(
+            lpaErrorReason = "ES10B_ERROR_REASON_UNSUPPORTED_CRT_VALUES",
+            lastHttpResponse = null,
+            lastHttpException = null,
+            lastApduResponse = null,
+            lastApduException = null,
+        )
+
+        startDownload()
+
+        // The download must fail and the wizard must then offer the diagnostics step.
+        awaitMainLooper { currentFragment()?.hasNext == true }
+
+        // The steps reached before the failure must be marked done...
+        assertProgressItemDone(0)
+        assertProgressItemDone(1)
+        // ...and the failing step must show the error.
+        assertProgressItemError(2)
+
+        // The error must have been recorded so the diagnostics step can show it:
+        // Next must lead to the diagnostics fragment (only created when an error
+        // is present).
+        clickNext()
+        assertTrue(
+            "next must lead to the diagnostics step after a failed download",
+            currentFragment() is DownloadWizardDiagnosticsFragment
+        )
     }
 }
