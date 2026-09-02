@@ -4,6 +4,7 @@ import android.os.Looper
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import org.robolectric.Shadows.shadowOf
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * The service runs its foreground-task machinery on Dispatchers.Main (the
@@ -15,7 +16,7 @@ suspend fun awaitMainLooper(
     timeoutMillis: Long = 10_000,
     condition: () -> Boolean
 ) {
-    withTimeout(timeoutMillis) {
+    withTimeout(timeoutMillis.milliseconds) {
         while (!condition()) {
             shadowOf(Looper.getMainLooper()).idle()
             yield()

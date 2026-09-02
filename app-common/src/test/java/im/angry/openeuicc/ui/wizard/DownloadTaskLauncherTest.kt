@@ -27,6 +27,7 @@ import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Tests launchProfileDownload(), the freestanding implementation of the
@@ -107,7 +108,7 @@ class DownloadTaskLauncherTest {
         // launchProfileDownload returns immediately: the back channel is buffered,
         // so the auto-confirmation does not block the caller (the download itself
         // only starts after the start command is delivered below).
-        val handle = withTimeout(10_000) {
+        val handle = withTimeout(10_000.milliseconds) {
             val deferred = async { launchProfileDownload(service, manager, logicalSlotId = 0, seId, input) }
             // Deliver the start command so the service machinery can run.
             startService()
@@ -196,7 +197,7 @@ class DownloadTaskLauncherTest {
                 handle.stateFlow.collect { states += it }
             }
             try {
-                withTimeout(10_000) {
+                withTimeout(10_000.milliseconds) {
                     while (states.none {
                         it is EuiccChannelManagerService.ForegroundTaskState.InProgress &&
                             it.context is ProfileDownloadState.Preparing

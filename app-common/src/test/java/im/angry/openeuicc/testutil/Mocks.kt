@@ -44,15 +44,12 @@ import net.typeblog.lpac_jni.ProfileDownloadState
  *    the UI mid-download.
  */
 class MockLpa(
-    preConfirmationStates: List<ProfileDownloadState> = emptyList(),
-    failAfter: ProfileDownloadState? = null,
-    holdAt: ProfileDownloadState? = null,
-) : LocalProfileAssistant {
     // Mutable so tests sharing a common setUp() can configure the mock right
     // before starting the download.
-    var preConfirmationStates: List<ProfileDownloadState> = preConfirmationStates
-    var failAfter: ProfileDownloadState? = failAfter
-    var holdAt: ProfileDownloadState? = holdAt
+    var preConfirmationStates: List<ProfileDownloadState> = emptyList(),
+    var failAfter: ProfileDownloadState? = null,
+    var holdAt: ProfileDownloadState? = null,
+) : LocalProfileAssistant {
     /** Completes as soon as downloadProfile() is entered (task reached the LPA). */
     val downloadStarted = CompletableDeferred<Unit>()
 
@@ -103,11 +100,6 @@ class MockLpa(
         downloadReturned.complete(result)
     }
 
-    /** Suspends until the given state class has been emitted by downloadProfile(). */
-    suspend fun awaitStateReached(state: ProfileDownloadState) {
-        stateReached.getOrPut(state::class) { CompletableDeferred() }.await()
-    }
-
     /** Whether the given state class has already been emitted by downloadProfile(). */
     fun isStateReached(state: ProfileDownloadState): Boolean =
         stateReached[state::class]?.isCompleted == true
@@ -117,7 +109,6 @@ class MockLpa(
         holdRelease.complete(Unit)
     }
 
-    suspend fun awaitDownloadStarted() = downloadStarted.await()
     suspend fun awaitDownloadResult(): Boolean = downloadReturned.await()
 
     // ---- trivial implementations for the rest of the LPA surface ----
