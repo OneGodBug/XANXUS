@@ -1,40 +1,62 @@
-name: Build Android APK
+name: Build Debug APKs
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches:
+      - '*'
+    tags:
+      - '*'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-debug:
+    runs-on: [ docker, android-app-certs ]
+    container:
+      volumes:
+        - android-app-keystore:/keystore
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Repository Checkout
+        uses: https://gitea.angry.im/actions/checkout@v3
         with:
-          submodules: recursive          # 必须加
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Decode Secret Signing Configuration
+        uses: https://gitea.angry.im/actions/base64-to-file@v1
+        with:
+          fileName: keystore.properties
+          fileDir: ${{ env.GITHUB_WORKSPACE }}
+          encodedString: ${{ secrets.OPENEUICC_SIGNING_CONFIG }}
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: https://gitea.angry.im/actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: https://gitea.angry.im/actions/setup-android@v4
+
+      - name: Run Tests
+        run: ./gradlew --no-daemon test
+
+      - name: Build Debug APKs
+        run: ./gradlew --no-daemon assembleDebug :app:assembleDebugMagiskModuleDir
+
+      - name: Copy Artifacts
+        run: |
+          find . -name 'app*-debug.apk' -exec cp {} . \;
+          cp -r app/build/magisk/debug ./magisk-debug
+
+      - name: Upload APK Artifacts
+        uses: https://gitea.angry.im/actions/upload-artifact@v3
         with:
-          packages: 'platform-tools'
+          name: Debug APKs
+          compression-level: 0
+          path: app*-debug.apk
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Upload Magisk Artifacts
+        uses: https://gitea.angry.im/actions/upload-artifact@v3
         with:
-          name: app-debug
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: warn
+          name: magisk-debug
+          compression-level: 0
+          path: magisk-debug
