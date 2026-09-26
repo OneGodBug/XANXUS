@@ -1,62 +1,36 @@
-name: Build Debug APKs
+name: Build Android APK
 
 on:
   push:
-    branches:
-      - '*'
-    tags:
-      - '*'
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:   # 允许手动触发
 
 jobs:
-  build-debug:
-    runs-on: [ docker, android-app-certs ]
-    container:
-      volumes:
-        - android-app-keystore:/keystore
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Repository Checkout
-        uses: https://gitea.angry.im/actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-
-      - name: Decode Secret Signing Configuration
-        uses: https://gitea.angry.im/actions/base64-to-file@v1
-        with:
-          fileName: keystore.properties
-          fileDir: ${{ env.GITHUB_WORKSPACE }}
-          encodedString: ${{ secrets.OPENEUICC_SIGNING_CONFIG }}
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: https://gitea.angry.im/actions/setup-java@v4
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
       - name: Setup Android SDK
-        uses: https://gitea.angry.im/actions/setup-android@v4
+        uses: android-actions/setup-android@v3
 
-      - name: Run Tests
-        run: ./gradlew --no-daemon test
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Build Debug APKs
-        run: ./gradlew --no-daemon assembleDebug :app:assembleDebugMagiskModuleDir
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --no-daemon
 
-      - name: Copy Artifacts
-        run: |
-          find . -name 'app*-debug.apk' -exec cp {} . \;
-          cp -r app/build/magisk/debug ./magisk-debug
-
-      - name: Upload APK Artifacts
-        uses: https://gitea.angry.im/actions/upload-artifact@v3
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          name: Debug APKs
-          compression-level: 0
-          path: app*-debug.apk
-
-      - name: Upload Magisk Artifacts
-        uses: https://gitea.angry.im/actions/upload-artifact@v3
-        with:
-          name: magisk-debug
-          compression-level: 0
-          path: magisk-debug
+          name: app-debug
+          path: app/build/outputs/apk/debug/*.apk
