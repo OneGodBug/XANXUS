@@ -3,60 +3,51 @@ name: Build Debug APKs
 on:
   push:
     branches:
-      - '*'
+      - "*"
     tags:
-      - '*'
+      - "*"
+  workflow_dispatch:
 
 jobs:
   build-debug:
-    runs-on: [ docker, android-app-certs ]
-    container:
-      volumes:
-        - android-app-keystore:/keystore
+    runs-on: ubuntu-latest
+
     steps:
       - name: Repository Checkout
-        uses: https://gitea.angry.im/actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Decode Secret Signing Configuration
-        uses: https://gitea.angry.im/actions/base64-to-file@v1
-        with:
-          fileName: keystore.properties
-          fileDir: ${{ env.GITHUB_WORKSPACE }}
-          encodedString: ${{ secrets.OPENEUICC_SIGNING_CONFIG }}
-
       - name: Set up JDK 17
-        uses: https://gitea.angry.im/actions/setup-java@v4
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
+          cache: gradle
 
-      - name: Setup Android SDK
-        uses: https://gitea.angry.im/actions/setup-android@v4
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Run Tests
-        run: ./gradlew --no-daemon test
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
 
       - name: Build Debug APKs
-        run: ./gradlew --no-daemon assembleDebug :app:assembleDebugMagiskModuleDir
+        run: ./gradlew --no-daemon assembleDebug
 
-      - name: Copy Artifacts
+      - name: Copy APKs
         run: |
-          find . -name 'app*-debug.apk' -exec cp {} . \;
-          cp -r app/build/magisk/debug ./magisk-debug
+          mkdir -p artifacts
+          find . -path "*/build/outputs/apk/debug/*.apk" -type f -exec cp {} artifacts/ \;
 
-      - name: Upload APK Artifacts
-        uses: https://gitea.angry.im/actions/upload-artifact@v3
-        with:
-          name: Debug APKs
-          compression-level: 0
-          path: app*-debug.apk
+      - name: List APKs
+        run: |
+          echo "Built APKs:"
+          ls -lh artifacts/
 
-      - name: Upload Magisk Artifacts
-        uses: https://gitea.angry.im/actions/upload-artifact@v3
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
         with:
-          name: magisk-debug
-          compression-level: 0
-          path: magisk-debug
+          name: Debug-APKs
+          path: artifacts/*.apk
+          if-no-files-found: error
