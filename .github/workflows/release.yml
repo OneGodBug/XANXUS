@@ -17,13 +17,13 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
           fetch-depth: 0
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -66,10 +66,9 @@ jobs:
       - name: Build EasyEUICC Unsigned Release
         run: ./gradlew --no-daemon :app-unpriv:assembleRelease
 
-      - name: Rename APK
+      - name: Find APK
+        id: apk
         run: |
-          mkdir -p release
-
           APK=$(find app-unpriv/build/outputs/apk/release \
             -maxdepth 1 \
             -type f \
@@ -81,20 +80,27 @@ jobs:
             exit 1
           fi
 
-          cp "$APK" "release/EasyEUICC-${GITHUB_REF_NAME}-unsigned.apk"
+          echo "APK=$APK" >> "$GITHUB_OUTPUT"
+          echo "Found APK: $APK"
 
-          echo "APK:"
-          ls -lh release/
-
-      - name: Copy Native Debug Symbols
+      - name: Prepare APK
         run: |
+          mkdir -p release
+
+          cp "${{ steps.apk.outputs.APK }}" \
+            "release/EasyEUICC-${{ github.ref_name }}-unsigned.apk"
+
           SYMBOLS="app-unpriv/build/outputs/native-debug-symbols/release/native-debug-symbols.zip"
 
           if [ -f "$SYMBOLS" ]; then
             cp "$SYMBOLS" release/
           fi
 
+          ls -lh release/
+
+      # Tag 构建：自动创建 GitHub Release
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -103,3 +109,12 @@ jobs:
           generate_release_notes: true
           files: |
             release/*
+
+      # 手动运行：把 APK 保存为 Actions Artifact
+      - name: Upload APK Artifact
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: EasyEUICC-${{ github.run_number }}-unsigned
+          path: release/*
+          retention-days: 7
