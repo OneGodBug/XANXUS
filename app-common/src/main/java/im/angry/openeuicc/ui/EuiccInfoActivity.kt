@@ -159,93 +159,64 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
      */
     private fun buildDemoEuiccInfoItems() = buildList {
 
-        add(
-            Item(
-                R.string.euicc_info_access_mode,
-                "Demo"
-            )
+    add(
+        Item(
+            R.string.euicc_info_access_mode,
+            "OpenMobile API (OMAPI)"
         )
+    )
 
-        add(
-            Item(
-                R.string.euicc_info_removable,
-                getString(R.string.euicc_info_yes)
-            )
+    add(
+        Item(
+            R.string.euicc_info_removable,
+            getString(R.string.euicc_info_yes)
         )
+    )
 
-        add(
-            Item(
-                R.string.euicc_info_eid,
-                "89033012345678901234567890123456",
-                copiedToastResId = R.string.toast_eid_copied
-            )
+    add(
+        Item(
+            R.string.euicc_info_eid,
+            "35840574202500000125000004415691",
+            copiedToastResId = R.string.toast_eid_copied
         )
+    )
 
-        add(
-            Item(
-                R.string.euicc_info_isdr_aid,
-                "A0000005591010FFFFFFFF8900000100"
-            )
+    add(
+        Item(
+            R.string.euicc_info_sgp22_version,
+            "2.5.0"
         )
+    )
 
-        add(
-            Item(
-                R.string.euicc_info_sku,
-                "Demo eUICC"
-            )
+    add(
+        Item(
+            R.string.euicc_info_sas_accreditation_number,
+            "WD-BG-UP-0126"
         )
+    )
 
-        add(
-            Item(
-                R.string.euicc_info_sn,
-                "DEMO123456789",
-                copiedToastResId = R.string.toast_sn_copied
-            )
+    add(
+        Item(
+            R.string.euicc_info_free_nvram,
+            "388.08 KiB（仅供参考）"
         )
+    )
 
-        add(
-            Item(
-                R.string.euicc_info_fw_ver,
-                "4.6.0"
-            )
+    add(
+        Item(
+            R.string.euicc_info_ci_type,
+            "GSMA 生产环境CI"
         )
+    )
 
-        add(
-            Item(
-                R.string.euicc_info_sgp22_version,
-                "2.3.0"
-            )
+    add(
+        Item(
+            R.string.euicc_info_atr,
+            "3B9D96803F47828031073FE211B6557509385056",
+            copiedToastResId = R.string.toast_atr_copied
         )
-
-        add(
-            Item(
-                R.string.euicc_info_sas_accreditation_number,
-                "GS-AC-UP-0000"
-            )
-        )
-
-        add(
-            Item(
-                R.string.euicc_info_free_nvram,
-                "291666 KB"
-            )
-        )
-
-        add(
-            Item(
-                R.string.euicc_info_ci_type,
-                getString(R.string.euicc_info_ci_unknown)
-            )
-        )
-
-        add(
-            Item(
-                R.string.euicc_info_atr,
-                "3B9F96801FC7A0230A",
-                copiedToastResId = R.string.toast_atr_copied
-            )
-        )
-    }
+    )
+}
 
     inner class EuiccInfoViewHolder(root: View) : ViewHolder(root) {
 
