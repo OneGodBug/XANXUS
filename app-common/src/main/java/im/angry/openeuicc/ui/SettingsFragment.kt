@@ -5,8 +5,10 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
@@ -47,59 +49,34 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
             setOnPreferenceClickListener(::onAppVersionClicked)
         }
 
-        private fun showLanguageDialog() {
-    val languages = arrayOf(
-        "跟随系统",
-        "简体中文",
-        "English",
-        "日本語"
-    )
-
-    val locales = arrayOf(
-        "",
-        "zh-CN",
-        "en",
-        "ja"
-    )
-
-    val currentLocale =
-        androidx.appcompat.app.AppCompatDelegate
-            .getApplicationLocales()
-            .toLanguageTags()
-
-    val currentIndex = when (currentLocale) {
-        "" -> 0
-        "zh-CN" -> 1
-        "en" -> 2
-        "ja" -> 3
-        else -> 0
-    }
-
-    androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        .setTitle(R.string.pref_advanced_language)
-        .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
-            androidx.appcompat.app.AppCompatDelegate
-                .setApplicationLocales(
-                    androidx.core.os.LocaleListCompat.forLanguageTags(
-                        locales[which]
-                    )
+        requirePreference<Preference>("pref_advanced_language").apply {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                // Android 13+：保持原来的系统语言设置
+                val uri = Uri.fromParts(
+                    "package",
+                    requireContext().packageName,
+                    null
                 )
 
-            dialog.dismiss()
-        }
-        .show()
-}
-            
-            else {
-        // Android 12 及以下：使用 App 自己的语言选择器
-            isVisible = true
+                intent = Intent(
+                    Settings.ACTION_APP_LOCALE_SETTINGS,
+                    uri
+                )
 
-            setOnPreferenceClickListener {
-            showLanguageDialog()
-            true
+                isVisible =
+                    intent!!.resolveActivity(
+                        requireContext().packageManager
+                    ) != null
+            } else {
+                // Android 12 及以下：使用自己的语言选择器
+                isVisible = true
+
+                setOnPreferenceClickListener {
+                    showLanguageDialog()
+                    true
+                }
+            }
         }
-    }
-}
 
         requirePreference<Preference>("pref_advanced_logs").apply {
             intent = Intent(requireContext(), LogsActivity::class.java)
@@ -143,10 +120,15 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         }
 
         requirePreference<Preference>("pref_info_website").apply {
-            val uri = appContainer.customizableTextProvider.websiteUri ?: return@apply
+            val uri = appContainer.customizableTextProvider.websiteUri
+                ?: return@apply
+
             isVisible = true
             summary = uri.buildUpon().clearQuery().build().toString()
-            intent = Intent(/* action = */ Intent.ACTION_VIEW, uri)
+            intent = Intent(
+                Intent.ACTION_VIEW,
+                uri
+            )
         }
     }
 
@@ -154,95 +136,62 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         findPreference<T>(key)!!
 
     private fun showLanguageDialog() {
-    val languages = arrayOf(
-        "跟随系统",
-        "简体中文",
-        "English",
-        "日本語"
-    )
+        val languages = arrayOf(
+            "跟随系统",
+            "简体中文",
+            "繁體中文",
+            "日本語"
+        )
 
-    val locales = arrayOf(
-        "",
-        "zh-CN",
-        "en",
-        "ja"
-    )
+        val locales = arrayOf(
+            "",
+            "zh-CN",
+            "zh-TW",
+            "ja"
+        )
 
-    val currentLocale =
-        androidx.appcompat.app.AppCompatDelegate
-            .getApplicationLocales()
-            .toLanguageTags()
+        val currentLocale =
+            AppCompatDelegate
+                .getApplicationLocales()
+                .toLanguageTags()
 
-    val currentIndex = when (currentLocale) {
-        "" -> 0
-        "zh-CN" -> 1
-        "en" -> 2
-        "ja" -> 3
-        else -> 0
-    }
+        val currentIndex = when (currentLocale) {
+            "" -> 0
+            "zh-CN" -> 1
+            "zh-TW" -> 2
+            "ja" -> 3
+            else -> 0
+        }
 
-    androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        .setTitle(R.string.pref_advanced_language)
-        .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
-            androidx.appcompat.app.AppCompatDelegate
-                .setApplicationLocales(
-                    androidx.core.os.LocaleListCompat.forLanguageTags(
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.pref_advanced_language)
+            .setSingleChoiceItems(
+                languages,
+                currentIndex
+            ) { dialog, which ->
+
+                AppCompatDelegate.setApplicationLocales(
+                    LocaleListCompat.forLanguageTags(
                         locales[which]
                     )
                 )
 
-            dialog.dismiss()
-        }
-        .show()
-}
-
-    private fun showLanguageDialog() {
-    val languages = arrayOf(
-        "跟随系统",
-        "简体中文",
-        "繁體中文",
-        "日本語"
-    )
-
-    val locales = arrayOf(
-        "",
-        "zh-CN",
-        "zh-TW",
-        "ja"
-    )
-
-    val currentLocale =
-        androidx.appcompat.app.AppCompatDelegate
-            .getApplicationLocales()
-            .toLanguageTags()
-
-    val currentIndex = when (currentLocale) {
-        "" -> 0
-        "zh-CN" -> 1
-        "zh-TW" -> 2
-        "ja" -> 3
-        else -> 0
+                dialog.dismiss()
+            }
+            .show()
     }
 
-    androidx.appcompat.app.AlertDialog.Builder(requireContext())
-        .setTitle(R.string.pref_advanced_language)
-        .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
-            androidx.appcompat.app.AppCompatDelegate
-                .setApplicationLocales(
-                    androidx.core.os.LocaleListCompat.forLanguageTags(
-                        locales[which]
-                    )
-                )
-
-            dialog.dismiss()
-        }
-        .show()
-}
     override fun onStart() {
         super.onStart()
-        setupRootViewSystemBarInsets(requireView(), arrayOf(
-            mainViewPaddingInsetHandler(requireView().requireViewById(R.id.recycler_view))
-        ))
+
+        setupRootViewSystemBarInsets(
+            requireView(),
+            arrayOf(
+                mainViewPaddingInsetHandler(
+                    requireView().requireViewById(R.id.recycler_view)
+                )
+            )
+        )
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -250,26 +199,50 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         if (developerPref.isVisible) return false
 
         val now = System.currentTimeMillis()
-        numClicks = if (now - lastClickTimestamp >= 1000) 1 else numClicks + 1
+
+        numClicks =
+            if (now - lastClickTimestamp >= 1000) {
+                1
+            } else {
+                numClicks + 1
+            }
+
         lastClickTimestamp = now
 
         lifecycleScope.launch {
-            preferenceRepository.developerOptionsEnabledFlow.updatePreference(numClicks >= 7)
+            preferenceRepository.developerOptionsEnabledFlow
+                .updatePreference(numClicks >= 7)
         }
 
         val toastText = when {
-            numClicks == 7 -> getString(R.string.developer_options_enabled)
-            numClicks > 1 -> getString(R.string.developer_options_steps, 7 - numClicks)
+            numClicks == 7 ->
+                getString(R.string.developer_options_enabled)
+
+            numClicks > 1 ->
+                getString(
+                    R.string.developer_options_steps,
+                    7 - numClicks
+                )
+
             else -> return true
         }
 
         lastToast?.cancel()
-        lastToast = Toast.makeText(requireContext(), toastText, Toast.LENGTH_SHORT)
+
+        lastToast = Toast.makeText(
+            requireContext(),
+            toastText,
+            Toast.LENGTH_SHORT
+        )
+
         lastToast!!.show()
+
         return true
     }
 
-    protected fun CheckBoxPreference.bindBooleanFlow(flow: PreferenceFlowWrapper<Boolean>) {
+    protected fun CheckBoxPreference.bindBooleanFlow(
+        flow: PreferenceFlowWrapper<Boolean>
+    ) {
         lifecycleScope.launch {
             flow.collect(::setChecked)
         }
@@ -278,11 +251,14 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
             lifecycleScope.launch {
                 flow.updatePreference(newValue as Boolean)
             }
+
             true
         }
     }
 
-    private fun EditTextPreference.bindStringFlow(flow: PreferenceFlowWrapper<String>) {
+    private fun EditTextPreference.bindStringFlow(
+        flow: PreferenceFlowWrapper<String>
+    ) {
         lifecycleScope.launch {
             flow.collect(::setText)
         }
@@ -291,26 +267,42 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
             lifecycleScope.launch {
                 flow.updatePreference(newValue as String)
             }
+
             true
         }
     }
 
-    private fun ListPreference.bindIntFlow(flow: PreferenceFlowWrapper<Int>, defaultValue: Int) {
+    private fun ListPreference.bindIntFlow(
+        flow: PreferenceFlowWrapper<Int>,
+        defaultValue: Int
+    ) {
         lifecycleScope.launch {
-            flow.collect { value = it.toString() }
+            flow.collect {
+                value = it.toString()
+            }
         }
 
         setOnPreferenceChangeListener { _, newValue ->
             lifecycleScope.launch {
-                flow.updatePreference((newValue as String).toIntOrNull() ?: defaultValue)
+                flow.updatePreference(
+                    (newValue as String).toIntOrNull()
+                        ?: defaultValue
+                )
             }
+
             true
         }
     }
 
-    protected fun mergePreferenceOverlay(overlayKey: String, targetKey: String) {
-        val overlayCat = requirePreference<PreferenceCategory>(overlayKey)
-        val targetCat = requirePreference<PreferenceCategory>(targetKey)
+    protected fun mergePreferenceOverlay(
+        overlayKey: String,
+        targetKey: String
+    ) {
+        val overlayCat =
+            requirePreference<PreferenceCategory>(overlayKey)
+
+        val targetCat =
+            requirePreference<PreferenceCategory>(targetKey)
 
         val prefs = buildList {
             for (i in 0..<overlayCat.preferenceCount) {
