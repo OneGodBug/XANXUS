@@ -325,4 +325,4 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
 
         overlayCat.parent?.removePreference(overlayCat)
     }
-
+}
