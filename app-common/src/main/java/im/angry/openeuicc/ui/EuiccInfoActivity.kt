@@ -288,7 +288,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     add(
         Item(
             R.string.euicc_info_ci_type,
-getString(R.string.euicc_info_ci_production)
+            getString(R.string.euicc_info_ci_gsma_live)
             
         )
     )
