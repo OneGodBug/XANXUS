@@ -136,50 +136,53 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         findPreference<T>(key)!!
 
     private fun showLanguageDialog() {
-        val languages = arrayOf(
-            "跟随系统",
-            "简体中文",
-            "繁體中文",
-            "日本語"
-        )
+    val languages = arrayOf(
+        "跟随系统",
+        "English",
+        "简体中文",
+        "繁體中文",
+        "日本語"
+    )
 
-        val locales = arrayOf(
-            "",
-            "zh-CN",
-            "zh-TW",
-            "ja"
-        )
+    val locales = arrayOf(
+        "",
+        "en",
+        "zh-CN",
+        "zh-TW",
+        "ja"
+    )
 
-        val currentLocale =
-            AppCompatDelegate
-                .getApplicationLocales()
-                .toLanguageTags()
+    val currentLocale =
+        AppCompatDelegate
+            .getApplicationLocales()
+            .toLanguageTags()
 
-        val currentIndex = when (currentLocale) {
-            "" -> 0
-            "zh-CN" -> 1
-            "zh-TW" -> 2
-            "ja" -> 3
-            else -> 0
-        }
-
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.pref_advanced_language)
-            .setSingleChoiceItems(
-                languages,
-                currentIndex
-            ) { dialog, which ->
-
-                AppCompatDelegate.setApplicationLocales(
-                    LocaleListCompat.forLanguageTags(
-                        locales[which]
-                    )
-                )
-
-                dialog.dismiss()
-            }
-            .show()
+    val currentIndex = when (currentLocale) {
+        "" -> 0
+        "en" -> 1
+        "zh-CN" -> 2
+        "zh-TW" -> 3
+        "ja" -> 4
+        else -> 0
     }
+
+    AlertDialog.Builder(requireContext())
+        .setTitle(R.string.pref_advanced_language)
+        .setSingleChoiceItems(
+            languages,
+            currentIndex
+        ) { dialog, which ->
+
+            AppCompatDelegate.setApplicationLocales(
+                LocaleListCompat.forLanguageTags(
+                    locales[which]
+                )
+            )
+
+            dialog.dismiss()
+        }
+        .show()
+}
 
     override fun onStart() {
         super.onStart()
