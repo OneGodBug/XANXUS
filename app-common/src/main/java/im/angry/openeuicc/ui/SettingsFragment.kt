@@ -47,14 +47,50 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
             setOnPreferenceClickListener(::onAppVersionClicked)
         }
 
-        requirePreference<Preference>("pref_advanced_language").apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        // Android 13+：继续使用系统原来的 App 语言设置
-            val uri = Uri.fromParts("package", requireContext().packageName, null)
-            intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS, uri)
-            isVisible =
-            intent!!.resolveActivity(requireContext().packageManager) != null
-    } else {
+        private fun showLanguageDialog() {
+    val languages = arrayOf(
+        "跟随系统",
+        "简体中文",
+        "English",
+        "日本語"
+    )
+
+    val locales = arrayOf(
+        "",
+        "zh-CN",
+        "en",
+        "ja"
+    )
+
+    val currentLocale =
+        androidx.appcompat.app.AppCompatDelegate
+            .getApplicationLocales()
+            .toLanguageTags()
+
+    val currentIndex = when (currentLocale) {
+        "" -> 0
+        "zh-CN" -> 1
+        "en" -> 2
+        "ja" -> 3
+        else -> 0
+    }
+
+    androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        .setTitle(R.string.pref_advanced_language)
+        .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
+            androidx.appcompat.app.AppCompatDelegate
+                .setApplicationLocales(
+                    androidx.core.os.LocaleListCompat.forLanguageTags(
+                        locales[which]
+                    )
+                )
+
+            dialog.dismiss()
+        }
+        .show()
+}
+            
+            else {
         // Android 12 及以下：使用 App 自己的语言选择器
             isVisible = true
 
@@ -159,7 +195,49 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         }
         .show()
 }
-    
+
+    private fun showLanguageDialog() {
+    val languages = arrayOf(
+        "跟随系统",
+        "简体中文",
+        "繁體中文",
+        "日本語"
+    )
+
+    val locales = arrayOf(
+        "",
+        "zh-CN",
+        "zh-TW",
+        "ja"
+    )
+
+    val currentLocale =
+        androidx.appcompat.app.AppCompatDelegate
+            .getApplicationLocales()
+            .toLanguageTags()
+
+    val currentIndex = when (currentLocale) {
+        "" -> 0
+        "zh-CN" -> 1
+        "zh-TW" -> 2
+        "ja" -> 3
+        else -> 0
+    }
+
+    androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        .setTitle(R.string.pref_advanced_language)
+        .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
+            androidx.appcompat.app.AppCompatDelegate
+                .setApplicationLocales(
+                    androidx.core.os.LocaleListCompat.forLanguageTags(
+                        locales[which]
+                    )
+                )
+
+            dialog.dismiss()
+        }
+        .show()
+}
     override fun onStart() {
         super.onStart()
         setupRootViewSystemBarInsets(requireView(), arrayOf(
