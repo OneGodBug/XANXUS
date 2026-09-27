@@ -53,7 +53,7 @@
 
         <Preference
             app:iconSpaceReserved="false"
-            app:isPreferenceVisible="false"
+            app:isPreferenceVisible="true"
             app:key="pref_advanced_language"
             app:summary="@string/pref_advanced_language_desc"
             app:title="@string/pref_advanced_language" />
