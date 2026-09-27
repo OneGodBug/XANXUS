@@ -213,7 +213,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
     val randomNvram =
         String.format(
-            "%.2f KiB（仅供参考）",
+            "%.2f KiB",
             Random.nextDouble(0.01, 500.0)
         )
 
@@ -279,14 +279,18 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     add(
         Item(
             R.string.euicc_info_free_nvram,
-            randomNvram
+            getString(
+               R.string.euicc_info_free_nvram_format,
+               randomNvramValue
+)
         )
     )
 
     add(
         Item(
             R.string.euicc_info_ci_type,
-            "GSMA 生产环境CI"
+getString(R.string.euicc_info_ci_production)
+            
         )
     )
 
