@@ -279,10 +279,9 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     add(
         Item(
             R.string.euicc_info_free_nvram,
-            getString(
-               R.string.euicc_info_free_nvram_hint,
-               randomNvramValue
-)
+             randomNvram + " " +
+                getString(R.string.euicc_info_free_nvram_hint
+    )
         )
     )
 
