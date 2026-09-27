@@ -17,8 +17,6 @@ class NoEuiccPlaceholderFragment : Fragment(), OpenEuiccContextMarker {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // 允许本 Fragment 向右上角菜单添加项目
         setHasOptionsMenu(true)
     }
 
@@ -46,16 +44,12 @@ class NoEuiccPlaceholderFragment : Fragment(), OpenEuiccContextMarker {
         inflater: MenuInflater
     ) {
         super.onCreateOptionsMenu(menu, inflater)
-
-        // 加载 eUICC 页面使用的菜单
         inflater.inflate(R.menu.fragment_euicc, menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
 
-        // 模拟 eUICC 环境：
-        // 只显示 eSIM Info
         menu.findItem(R.id.show_notifications)?.isVisible = false
         menu.findItem(R.id.euicc_info)?.isVisible = true
         menu.findItem(R.id.euicc_memory_reset)?.isVisible = false
@@ -65,7 +59,6 @@ class NoEuiccPlaceholderFragment : Fragment(), OpenEuiccContextMarker {
         return when (item.itemId) {
 
             R.id.euicc_info -> {
-                // 打开我们之前制作的模拟 eUICC Info 页面
                 startActivity(
                     Intent(
                         requireContext(),
