@@ -134,6 +134,10 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
+            R.id.euicc_info_main -> {
+                startActivity(Intent(this, EuiccInfoActivity::class.java))
+                true
+            }
 
             R.id.reload -> {
                 refresh()
