@@ -48,11 +48,22 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
         }
 
         requirePreference<Preference>("pref_advanced_language").apply {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@apply
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        // Android 13+：继续使用系统原来的 App 语言设置
             val uri = Uri.fromParts("package", requireContext().packageName, null)
             intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS, uri)
-            isVisible = intent!!.resolveActivity(requireContext().packageManager) != null
+            isVisible =
+            intent!!.resolveActivity(requireContext().packageManager) != null
+    } else {
+        // Android 12 及以下：使用 App 自己的语言选择器
+            isVisible = true
+
+            setOnPreferenceClickListener {
+            showLanguageDialog()
+            true
         }
+    }
+}
 
         requirePreference<Preference>("pref_advanced_logs").apply {
             intent = Intent(requireContext(), LogsActivity::class.java)
