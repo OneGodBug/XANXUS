@@ -25,6 +25,10 @@ import im.angry.openeuicc.core.EuiccChannelManager
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.launch
 
+import kotlinx.coroutines.launch
+import kotlin.random.Random
+
+
 class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
     companion object {
@@ -159,6 +163,83 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
      */
     private fun buildDemoEuiccInfoItems() = buildList {
 
+    // =========================
+    // EID
+    // 前8位随机：
+    // 第1位 3~9
+    // 第2~8位 0~9
+    // 中间17位固定
+    // 最后7位随机
+    // =========================
+
+    val randomEidPrefix = buildString {
+        append(Random.nextInt(3, 10))
+
+        repeat(7) {
+            append(Random.nextInt(0, 10))
+        }
+    }
+
+    val fixedEidMiddle = "20250000012500000"
+
+    val randomEidSuffix = buildString {
+        repeat(7) {
+            append(Random.nextInt(0, 10))
+        }
+    }
+
+    val randomEid =
+        randomEidPrefix + fixedEidMiddle + randomEidSuffix
+
+
+    // =========================
+    // SAS
+    // 固定前缀，最后4位随机
+    // =========================
+
+    val randomSas = buildString {
+        append("WD-BG-UP-")
+
+        repeat(4) {
+            append(Random.nextInt(0, 10))
+        }
+    }
+
+
+    // =========================
+    // NVRAM
+    // 随机小于500 KiB
+    // =========================
+
+    val randomNvram =
+        String.format(
+            "%.2f KiB（仅供参考）",
+            Random.nextDouble(0.01, 500.0)
+        )
+
+
+    // =========================
+    // ATR
+    // 44位十六进制随机字符
+    // =========================
+
+    val hexCharacters = "0123456789ABCDEF"
+
+    val randomAtr = buildString {
+        repeat(44) {
+            append(
+                hexCharacters[
+                    Random.nextInt(hexCharacters.length)
+                ]
+            )
+        }
+    }
+
+
+    // =========================
+    // 页面项目
+    // =========================
+
     add(
         Item(
             R.string.euicc_info_access_mode,
@@ -176,7 +257,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     add(
         Item(
             R.string.euicc_info_eid,
-            "35840574202500000125000004415691",
+            randomEid,
             copiedToastResId = R.string.toast_eid_copied
         )
     )
@@ -191,14 +272,14 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     add(
         Item(
             R.string.euicc_info_sas_accreditation_number,
-            "WD-BG-UP-0126"
+            randomSas
         )
     )
 
     add(
         Item(
             R.string.euicc_info_free_nvram,
-            "388.08 KiB（仅供参考）"
+            randomNvram
         )
     )
 
@@ -212,7 +293,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     add(
         Item(
             R.string.euicc_info_atr,
-            "3B9D96803F47828031073FE211B6557509385056",
+            randomAtr,
             copiedToastResId = R.string.toast_atr_copied
         )
     )
