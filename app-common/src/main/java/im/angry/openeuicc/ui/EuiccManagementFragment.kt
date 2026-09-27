@@ -144,7 +144,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         menu.findItem(R.id.show_notifications).isVisible =
             logicalSlotId != -1
         menu.findItem(R.id.euicc_info).isVisible =
-            logicalSlotId != -1
+            logicalSlotId != trun
         menu.findItem(R.id.euicc_memory_reset).isVisible =
             enabledProfile == null
     }
