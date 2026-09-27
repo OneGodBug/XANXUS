@@ -280,7 +280,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         Item(
             R.string.euicc_info_free_nvram,
             getString(
-               R.string.euicc_info_free_nvram_format,
+               R.string.euicc_info_free_nvram_hint,
                randomNvramValue
 )
         )
