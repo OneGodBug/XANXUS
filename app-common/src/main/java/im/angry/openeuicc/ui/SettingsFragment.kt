@@ -117,6 +117,49 @@ open class SettingsFragment : PreferenceFragmentCompat(), OpenEuiccContextMarker
     protected fun <T : Preference> requirePreference(key: CharSequence) =
         findPreference<T>(key)!!
 
+    private fun showLanguageDialog() {
+    val languages = arrayOf(
+        "跟随系统",
+        "简体中文",
+        "English",
+        "日本語"
+    )
+
+    val locales = arrayOf(
+        "",
+        "zh-CN",
+        "en",
+        "ja"
+    )
+
+    val currentLocale =
+        androidx.appcompat.app.AppCompatDelegate
+            .getApplicationLocales()
+            .toLanguageTags()
+
+    val currentIndex = when (currentLocale) {
+        "" -> 0
+        "zh-CN" -> 1
+        "en" -> 2
+        "ja" -> 3
+        else -> 0
+    }
+
+    androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        .setTitle(R.string.pref_advanced_language)
+        .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
+            androidx.appcompat.app.AppCompatDelegate
+                .setApplicationLocales(
+                    androidx.core.os.LocaleListCompat.forLanguageTags(
+                        locales[which]
+                    )
+                )
+
+            dialog.dismiss()
+        }
+        .show()
+}
+    
     override fun onStart() {
         super.onStart()
         setupRootViewSystemBarInsets(requireView(), arrayOf(
